@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -46,8 +47,8 @@ public class JWTService {
         return jwtExpiration;
     }
 
-    private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+    private SecretKey getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey); 
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -80,14 +81,13 @@ public class JWTService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parser()
-                .verifyWith(getSignInKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+    return Jwts
+            .parser()
+            .verifyWith(getSignInKey()) // Ahora getSignInKey() devuelve SecretKey
+            .build()
+            .parseSignedClaims(token)
+            .getPayload(); // En versiones nuevas, getPayload() reemplaza a getBody()
     }
-
 
 
 

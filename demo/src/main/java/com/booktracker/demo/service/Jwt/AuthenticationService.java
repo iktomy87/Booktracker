@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 
+import jakarta.mail.MessagingException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,7 @@ import com.booktracker.demo.dto.User.RegisterUserDto;
 import com.booktracker.demo.dto.User.VerifyUserDto;
 import com.booktracker.demo.model.User;
 import com.booktracker.demo.repository.User.UserRepository;
+import com.booktracker.demo.service.Jwt.EmailService;
 
 @Service
 public class AuthenticationService {

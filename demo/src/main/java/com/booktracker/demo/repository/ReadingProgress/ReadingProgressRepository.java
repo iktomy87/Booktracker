@@ -10,7 +10,7 @@ import com.booktracker.demo.model.Book;
 
 @Repository
 public interface ReadingProgressRepository extends JpaRepository<ReadingProgress, Long> {
-    List<ReadingProgress> findByUserAndIsReadingTrue(Long id_user);
-    List<ReadingProgress> findById(Long id_progress);
-    Optional<ReadingProgress> findByUserAndBook(Long id_user, Long id_book);
+    List<ReadingProgress> findByUserAndIsReadingTrue(User user);
+    List<ReadingProgress> findById(Book book);
+    Optional<ReadingProgress> findByUserAndBook(User user, Book book);
 }
