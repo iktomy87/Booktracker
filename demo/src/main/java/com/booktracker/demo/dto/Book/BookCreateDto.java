@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
@@ -27,8 +28,8 @@ public class BookCreateDto {
 
     private String publisher;
 
-    @NotNull(message = "El ID del autor es obligatorio")
-    private Long authorId; // Enviamos solo el ID
+    @NotEmpty(message = "Debe asignar al menos un autor")
+    private List<Long> authorIds; 
 
     private List<Long> genreIds; // Lista de IDs para la relación ManyToMany
 }
