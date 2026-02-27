@@ -9,11 +9,15 @@ import com.booktracker.demo.dto.Book.BookCreateDto;
 import com.booktracker.demo.dto.Book.BookDto;
 import com.booktracker.demo.mapper.Book.BookMapper;
 import com.booktracker.demo.model.Book;
+import com.booktracker.demo.repository.Author.AuthorRepository;
 import com.booktracker.demo.repository.Book.BookRepository;
+import com.booktracker.demo.repository.Genre.GenreRepository;
 import com.booktracker.demo.service.Book.BookService;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import com.booktracker.demo.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import java.util.HashSet;
 
 @Service
 @RequiredArgsConstructor
@@ -27,15 +31,14 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public BookDto createBook(BookCreateDto bookCreateDto) {
-        // CORRECCIÓN: Usar la instancia inyectada 'bookMapper'
         Book book = bookMapper.toEntity(bookCreateDto);
         
         if (bookCreateDto.getAuthorIds() != null) {
-            book.setAuthors(authorRepository.findAllById(bookCreateDto.getAuthorIds()));
+            book.setAuthors(new HashSet<>(authorRepository.findAllById(bookCreateDto.getAuthorIds())));
         }
 
         if (bookCreateDto.getGenreIds() != null) {
-            book.setGenres(genreRepository.findAllById(bookCreateDto.getGenreIds()));
+            book.setGenres(new HashSet<>(genreRepository.findAllById(bookCreateDto.getGenreIds())));
         }
 
         Book savedBook = bookRepository.save(book);

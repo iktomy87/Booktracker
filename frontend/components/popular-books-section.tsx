@@ -4,40 +4,18 @@ import { useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { BookCard } from "@/components/book-card"
 
-const popularBooks = [
-  {
-    id: 1,
-    title: "Cien Años de Soledad",
-    author: "Gabriel García Márquez",
-    cover: "/placeholder.svg?height=320&width=200",
-  },
-  {
-    id: 2,
-    title: "El Gran Gatsby",
-    author: "F. Scott Fitzgerald",
-    cover: "/placeholder.svg?height=320&width=200",
-  },
-  {
-    id: 3,
-    title: "Asesinato en el Orient Express",
-    author: "Agatha Christie",
-    cover: "/placeholder.svg?height=320&width=200",
-  },
-  {
-    id: 4,
-    title: "Estudio en Escarlata",
-    author: "Arthur Conan Doyle",
-    cover: "/placeholder.svg?height=320&width=200",
-  },
-  {
-    id: 5,
-    title: "El Señor de los Anillos: La Comunidad del Anillo",
-    author: "J.R.R. Tolkien",
-    cover: "/placeholder.svg?height=320&width=200",
-  },
-]
+interface Book {
+  id: number;
+  name: string; 
+  authorName: string; 
+  coverUrl?: string; 
+}
 
-export function PopularBooksSection() {
+interface PopularBooksSectionProps {
+  books: Book[];
+}
+
+export function PopularBooksSection({ books }: PopularBooksSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const scroll = (direction: "left" | "right") => {
@@ -82,8 +60,14 @@ export function PopularBooksSection() {
         className="scrollbar-hide flex gap-6 overflow-x-auto pb-4"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {popularBooks.map((book) => (
-          <BookCard key={book.id} book={book} />
+        {books.map((book) => (
+          <BookCard
+            key={book.id}
+            title={book.name} 
+            author={book.authorName || "Desconocido"} 
+            coverUrl={book.coverUrl || "/placeholder.png"} 
+            rating={4.5} 
+          />
         ))}
       </div>
     </section>

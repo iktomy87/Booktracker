@@ -8,4 +8,5 @@ import com.booktracker.demo.dto.Book.BookDto;
 public interface BookService {
     BookDto createBook(BookCreateDto bookCreateDto);
     List<BookDto> getAllBooks();
+    BookDto getBookById(Long id);
 }

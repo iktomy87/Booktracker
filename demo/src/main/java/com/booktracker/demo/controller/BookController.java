@@ -2,9 +2,6 @@ package com.booktracker.demo.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.booktracker.demo.dto.Book.BookDto;
 import com.booktracker.demo.dto.Book.BookCreateDto;
+import com.booktracker.demo.dto.Book.BookDto;
 import com.booktracker.demo.service.Book.BookService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,9 +32,7 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<List<BookDto>> getAllBooks() {
-        public ResponseEntity<List<BookDto>> getAllBooks() {
-            List<BookDto> books = bookService.getAllBooks();
-            return ResponseEntity.ok(books);
-        }
+        List<BookDto> books = bookService.getAllBooks();
+        return ResponseEntity.ok(books);
     }
 }

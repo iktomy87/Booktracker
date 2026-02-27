@@ -3,6 +3,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.booktracker.demo.repository.ReadingProgress.ReadingProgressRepository;
 import com.booktracker.demo.model.ReadingProgress;
+import com.booktracker.demo.exceptions.ResourceNotFoundException;
 
 @Service
 public class ReadingService {

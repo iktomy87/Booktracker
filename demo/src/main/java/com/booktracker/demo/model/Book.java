@@ -1,16 +1,9 @@
 package com.booktracker.demo.model;
-import java.util.ArrayList;
-import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import java.util.HashSet; 
+import java.util.Set;    
+
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,25 +19,27 @@ public class Book {
 
     @Column(nullable = false, length = 200)
     private String name;
+    
     @Column(length = 500)
     private String description; 
     private int totalPages;
     private String publisher;
 
+    // CAMBIO: List -> Set
     @ManyToMany
     @JoinTable(
         name = "book_author",
         joinColumns = @JoinColumn(name = "book_id"),
         inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-    private List<Author> authors = new ArrayList<>();
+    private Set<Author> authors = new HashSet<>(); // Inicializar como HashSet
 
+    // CAMBIO: List -> Set
     @ManyToMany
     @JoinTable(
         name = "book_genre",
         joinColumns = @JoinColumn(name = "book_id"),
         inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
-    private List<Genre> genres = new ArrayList<>();
-
+    private Set<Genre> genres = new HashSet<>(); // Inicializar como HashSet
 }
