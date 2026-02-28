@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: booktracker-db
+    environment:
+      POSTGRES_DB: booktracker_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    container_name: booktracker-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # IMPORTANTE: Aquí cambiamos "localhost" por el nombre del servicio "db"
+      - DB_URL=jdbc:postgresql://db:5432/booktracker_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=1234
+      - SECURITY_JWT_SECRET_KEY=5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: booktracker-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # URL para que el frontend se comunique con el backend desde el navegador del usuario
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  # Volumen para que la base de datos no se borre si apagas el contenedor
+  postgres_data:
