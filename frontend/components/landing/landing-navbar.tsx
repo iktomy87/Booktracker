@@ -18,12 +18,12 @@ export function LandingNavbar() {
       </Link>
       <ul className="hidden md:flex items-center gap-10 list-none">
         <li>
-          <Link href="#" className="no-underline text-landing-text-muted text-sm tracking-wide transition-colors hover:text-landing-text">
+          <Link href="/pages/login" className="no-underline text-landing-text-muted text-sm tracking-wide transition-colors hover:text-landing-text">
             Iniciar Sesión
           </Link>
         </li>
         <li>
-          <Link href="#" className="bg-landing-dark text-landing-warm-white px-5.5 py-2.5 rounded-full font-medium text-sm transition-colors hover:bg-landing-red hover:text-white">
+          <Link href="/pages/register" className="bg-landing-dark text-landing-warm-white px-5.5 py-2.5 rounded-full font-medium text-sm transition-colors hover:bg-landing-red hover:text-white">
             Registro
           </Link>
         </li>
