@@ -1,23 +1,56 @@
+'use client';
+import { useState } from "react";
 import Link from "next/link"
+import Typewriter from 'typewriter-effect';
 
 export function LandingHero() {
+  const [isTypingDone, setIsTypingDone] = useState(false);
   return (
     <section className="min-h-screen pt-40 pb-24 px-8 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-[1300px] mx-auto md:px-16 lg:px-20">
       <div className="flex flex-col">
-        <h1 className="font-playfair text-[clamp(3rem,5vw,5.5rem)] font-medium leading-[1.1] text-landing-dark mb-6 animate-fade-up">
-          Cada libro<br />que has <em className="italic text-landing-red not-italic">leído</em>,<br />en un solo lugar.
+        
+        {/* El h1 necesita un min-h para que el texto de abajo no salte mientras se escribe */}
+        <h1 className="font-playfair text-[clamp(3rem,5vw,5.5rem)] font-medium leading-[1.1] text-landing-dark mb-6 min-h-[4.5em]">
+          <Typewriter
+            onInit={(typewriter) => {
+              typewriter
+                .typeString('Cada libro<br />que has <em class="italic text-landing-red not-italic">leído</em>,<br />en un solo lugar.')
+                // callFunction se ejecuta exactamente cuando typeString termina
+                .callFunction(() => {
+                  setIsTypingDone(true); 
+                })
+                .start();
+            }}
+            options={{
+              delay: 50,
+              cursor: '|',
+              cursorClassName: 'text-landing-red font-light animate-pulse'
+            }}
+          />
         </h1>
-        <p className="text-lg text-landing-text-muted leading-relaxed max-w-[420px] mb-10 font-light animate-fade-up [animation-delay:0.1s]">
-          Quill transforma tus lecturas en una bella biblioteca — sigue tu progreso, descubre nuevas historias, y construye hábitos que duren.
-        </p>
-        <div className="flex items-center gap-6 animate-fade-up [animation-delay:0.2s]">
-          <Link href="#" className="bg-landing-dark text-landing-warm-white px-9 py-3.5 rounded-full font-medium text-sm transition-all hover:bg-landing-red hover:-translate-y-0.5">
-            Crea una cuenta gratis
-          </Link>
-          <Link href="#" className="text-landing-text-muted text-sm flex items-center gap-1.5 transition-colors hover:text-landing-text">
-            See how it works &rarr;
-          </Link>
+
+        {/* Contenedor del párrafo y botones condicionado por isTypingDone */}
+        <div 
+          className={`transition-all duration-1000 ease-out ${
+            isTypingDone 
+              ? "opacity-100 translate-y-0" 
+              : "opacity-0 translate-y-8 pointer-events-none"
+          }`}
+        >
+          <p className="text-lg text-landing-text-muted leading-relaxed max-w-[420px] mb-10 font-light">
+            Quill transforma tus lecturas en una bella biblioteca — sigue tu progreso, descubre nuevas historias, y construye hábitos que duren.
+          </p>
+          
+          <div className="flex items-center gap-6">
+            <Link href="#" className="bg-landing-dark text-landing-warm-white px-9 py-3.5 rounded-full font-medium text-sm transition-all hover:bg-landing-red hover:-translate-y-0.5">
+              Crea una cuenta gratis
+            </Link>
+            <Link href="#" className="text-landing-text-muted text-sm flex items-center gap-1.5 transition-colors hover:text-landing-text">
+              See how it works &rarr;
+            </Link>
+          </div>
         </div>
+
       </div>
 
       <div className="relative animate-fade-in [animation-delay:0.3s]">
