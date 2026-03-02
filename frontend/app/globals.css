@@ -33,6 +33,18 @@
   --sidebar-accent-foreground: #2c2416;
   --sidebar-border: #d4c8b4;
   --sidebar-ring: #6b2d2d;
+
+  /* Landing page specific colors */
+  --landing-cream: #f0ebe0;
+  --landing-warm-white: #faf7f2;
+  --landing-sand: #e8dfc8;
+  --landing-tan: #c9b99a;
+  --landing-brown: #7a5c3e;
+  --landing-dark: #2a1f14;
+  --landing-red: #9b2335;
+  --landing-red-light: #c94050;
+  --landing-text: #3d2e1e;
+  --landing-text-muted: #8a7560;
 }
 
 .dark {
@@ -71,8 +83,10 @@
 }
 
 @theme inline {
-  --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
-  --font-serif: "Lora", "Lora Fallback", Georgia, serif;
+  --font-sans: var(--font-inter), "Inter", "Inter Fallback", system-ui, sans-serif;
+  --font-serif: var(--font-lora), "Lora", "Lora Fallback", Georgia, serif;
+  --font-playfair: var(--font-playfair), "Playfair Display", serif;
+  --font-dm-sans: var(--font-dm-sans), "DM Sans", sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -98,6 +112,18 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  
+  --color-landing-cream: var(--landing-cream);
+  --color-landing-warm-white: var(--landing-warm-white);
+  --color-landing-sand: var(--landing-sand);
+  --color-landing-tan: var(--landing-tan);
+  --color-landing-brown: var(--landing-brown);
+  --color-landing-dark: var(--landing-dark);
+  --color-landing-red: var(--landing-red);
+  --color-landing-red-light: var(--landing-red-light);
+  --color-landing-text: var(--landing-text);
+  --color-landing-text-muted: var(--landing-text-muted);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -110,6 +136,28 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  --animate-fade-up: fade-up 0.8s ease both;
+  --animate-fade-in: fade-in 1s ease both;
+  --animate-fill-bar: fill-bar 1.5s 0.8s ease both;
+  --animate-float: float 3s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fill-bar {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
 }
 
 @layer base {
