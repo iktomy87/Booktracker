@@ -9,6 +9,12 @@ export function LandingLibrary() {
     { title: "Murder on the Orient Express", author: "Agatha Christie", color: "bg-linear-to-br from-[#2e0d0d] to-[#5a1a1a]", textColor: "text-[#f4b8b8]", mini: "MURDER ON THE ORIENT EXPRESS" },
     { title: "Sherlock Holmes", author: "Arthur Conan Doyle", color: "bg-linear-to-br from-[#2e2010] to-[#5a3a18]", textColor: "text-[#f4d8a8]", mini: "SHERLOCK HOLMES" },
     { title: "The Lord of the Rings", author: "J.R.R. Tolkien", color: "bg-linear-to-br from-[#1a1a2e] to-[#2e2d5a]", textColor: "text-[#b8a8f4]", mini: "THE LORD OF THE RINGS" },
+    { title: "Cien Años de Soledad", author: "García Márquez", color: "bg-linear-to-br from-[#1a2f0e] to-[#2d4a1e]", textColor: "text-[#a8c87a]", mini: "CIEN AÑOS DE SOLEDAD" },
+    { title: "The Great Gatsby", author: "F. Scott Fitzgerald", color: "bg-linear-to-br from-[#0d1a2e] to-[#1a2f50]", textColor: "text-[#7ab8c8]", mini: "THE GREAT GATSBY" },
+    { title: "Murder on the Orient Express", author: "Agatha Christie", color: "bg-linear-to-br from-[#2e0d0d] to-[#5a1a1a]", textColor: "text-[#f4b8b8]", mini: "MURDER ON THE ORIENT EXPRESS" },
+    { title: "Sherlock Holmes", author: "Arthur Conan Doyle", color: "bg-linear-to-br from-[#2e2010] to-[#5a3a18]", textColor: "text-[#f4d8a8]", mini: "SHERLOCK HOLMES" },
+    { title: "The Lord of the Rings", author: "J.R.R. Tolkien", color: "bg-linear-to-br from-[#1a1a2e] to-[#2e2d5a]", textColor: "text-[#b8a8f4]", mini: "THE LORD OF THE RINGS" },
+    
 ]
 
   return (
@@ -41,25 +47,44 @@ export function LandingLibrary() {
           ))}
         </div>
 
-        <div className="mt-10 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-6 min-w-max pb-4">
-            {books.map((book, idx) => (
-              <div key={idx} className="w-[120px]">
-                <div className={`${book.color} w-[120px] h-[170px] rounded-lg mb-3 flex items-center justify-center p-4 transition-all hover:-translate-y-1.5 hover:scale-105 cursor-pointer`}>
-                  <span className={`${book.textColor} font-playfair text-[9px] text-center font-bold tracking-widest whitespace-pre-line uppercase`}>
-                    {book.mini}
-                  </span>
-                </div>
-                <div className="text-[12px] font-medium text-landing-dark leading-snug mb-0.5 line-clamp-2">
-                  {book.title}
-                </div>
-                <div className="text-[11px] text-landing-red font-medium">
-                  {book.author}
-                </div>
+      <div className="mt-10 overflow-hidden flex group pb-4 relative">
+        <div className="flex gap-6 min-w-max animate-scroll group-hover:[animation-play-state:paused] pr-6">
+          {books.map((book, idx) => (
+            <div key={`pista1-${idx}`} className="w-[120px] shrink-0">
+              <div className={`${book.color} w-[120px] h-[170px] rounded-lg mb-3 flex items-center justify-center p-4 cursor-pointer`}>
+                <span className={`${book.textColor} font-playfair text-[9px] text-center font-bold tracking-widest whitespace-pre-line uppercase`}>
+                  {book.mini}
+                </span>
               </div>
-            ))}
-          </div>
+              <div className="text-[12px] font-medium text-landing-dark leading-snug mb-0.5 line-clamp-2">
+                {book.title}
+              </div>
+              <div className="text-[11px] text-landing-red font-medium">
+                {book.author}
+              </div>
+            </div>
+          ))}
         </div>
+
+        <div className="flex gap-6 min-w-max animate-scroll group-hover:[animation-play-state:paused] pr-6" aria-hidden="true">
+          {books.map((book, idx) => (
+            <div key={`pista2-${idx}`} className="w-[120px] shrink-0">
+              <div className={`${book.color} w-[120px] h-[170px] rounded-lg mb-3 flex items-center justify-center p-4 cursor-pointer`}>
+                <span className={`${book.textColor} font-playfair text-[9px] text-center font-bold tracking-widest whitespace-pre-line uppercase`}>
+                  {book.mini}
+                </span>
+              </div>
+              <div className="text-[12px] font-medium text-landing-dark leading-snug mb-0.5 line-clamp-2">
+                {book.title}
+              </div>
+              <div className="text-[11px] text-landing-red font-medium">
+                {book.author}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       </div>
     </section>
   )

@@ -173,3 +173,19 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+@layer utilities {
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%); 
+    }
+  }
+  
+  .animate-scroll {
+    /* Ajusta los segundos para controlar la velocidad */
+    animation: scroll 20s linear infinite; 
+  }
+}
