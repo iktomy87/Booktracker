@@ -3,10 +3,112 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function RegisterForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // 1. Estados para guardar los valores de los inputs
+  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
+  // 2. Estados para manejar el proceso de envío
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
+
+  // 3. Función que se ejecuta al enviar el formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setSuccess(false)
+
+    // --- Validaciones Frontend ---
+    if (!username || !email || !password || !confirmPassword) {
+      setError("Todos los campos son obligatorios.")
+      return
+    }
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.")
+      return
+    }
+    if (!termsAccepted) {
+      setError("Debes aceptar los Términos de Uso y la Política de privacidad.")
+      return
+    }
+    if (password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.")
+      return
+    }
+
+    // --- Envío al Backend ---
+    setIsLoading(true)
+    try {
+      const response = await fetch("http://localhost:8080/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Mapeamos los estados a las propiedades que espera tu RegisterUserDto
+        body: JSON.stringify({
+          username: username,
+          email: email,
+          password: password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.text()
+        throw new Error(errorData || "Ocurrió un error al registrar el usuario.")
+      }
+
+      router.push("/pages/verify")
+      // Si todo sale bien
+      setSuccess(true)
+
+      const loginRes = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      })
+
+      if (loginRes.ok) {
+        const loginData = await loginRes.json()
+        
+        // Guardamos el token en el almacenamiento del navegador
+        localStorage.setItem("token", loginData.token)
+        
+        // 3. REDIRIGIR A LA BIBLIOTECA (Agregamos un mini retraso para que se vea el msj de éxito)
+        setTimeout(() => {
+          router.push("/pages/homepage")
+        }, 1500)
+        
+      } else {
+        // Si por alguna razón el login falla, lo mandamos a la página de login manual
+        router.push("/pages/login")
+      }
+      
+      // Limpiar el formulario tras el éxito
+      setUsername("")
+      setEmail("")
+      setPassword("")
+      setConfirmPassword("")
+      setTermsAccepted(false)
+
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="bg-landing-warm-white flex items-center justify-center p-12 md:p-16 lg:p-20 overflow-y-auto animate-slide-in">
@@ -16,13 +118,27 @@ export function RegisterForm() {
         </h1>
         <div className="relative h-px bg-linear-to-r from-landing-tan to-transparent mb-9 after:content-[''] after:absolute after:right-0 after:-top-[3px] after:w-1.5 after:h-1.5 after:bg-landing-red after:rounded-full"></div>
 
-        <form className="space-y-5">
+        {/* Mensajes de Alerta */}
+        {error && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-6 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg">
+            ¡Registro exitoso! Por favor, verifica tu correo o inicia sesión.
+          </div>
+        )}
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-[0.8rem] text-landing-text-muted mb-1.5 tracking-wide">
               Nombre de usuario
             </label>
             <input
               type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full p-3 bg-landing-cream border border-landing-sand rounded-lg font-dm-sans text-[0.9rem] text-landing-text outline-none focus:border-landing-red focus:ring-3 focus:ring-landing-red/8 transition-all"
               autoComplete="off"
             />
@@ -34,6 +150,8 @@ export function RegisterForm() {
             </label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 bg-landing-cream border border-landing-sand rounded-lg font-dm-sans text-[0.9rem] text-landing-text outline-none focus:border-landing-red focus:ring-3 focus:ring-landing-red/8 transition-all"
               autoComplete="off"
             />
@@ -46,6 +164,8 @@ export function RegisterForm() {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 bg-landing-cream border border-landing-sand rounded-lg font-dm-sans text-[0.9rem] text-landing-text outline-none focus:border-landing-red focus:ring-3 focus:ring-landing-red/8 transition-all pr-11"
               />
               <button
@@ -66,6 +186,8 @@ export function RegisterForm() {
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full p-3 bg-landing-cream border border-landing-sand rounded-lg font-dm-sans text-[0.9rem] text-landing-text outline-none focus:border-landing-red focus:ring-3 focus:ring-landing-red/8 transition-all pr-11"
               />
               <button
@@ -83,6 +205,8 @@ export function RegisterForm() {
             <input
               type="checkbox"
               id="terms"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
               className="w-4 h-4 accent-landing-red cursor-pointer flex-shrink-0"
             />
             <label htmlFor="terms" className="text-[0.8rem] text-landing-text-muted cursor-pointer leading-tight">
@@ -93,9 +217,14 @@ export function RegisterForm() {
           <div className="flex items-center gap-6 mt-2">
             <button
               type="submit"
-              className="bg-landing-red text-white py-3.5 px-9 rounded-lg font-dm-sans text-[0.92rem] font-medium cursor-pointer tracking-wide transition-all hover:bg-landing-red-light hover:-translate-y-0.5 active:translate-y-0 relative overflow-hidden after:content-[''] after:absolute after:inset-0 after:bg-linear-to-br after:from-white/15 after:to-transparent"
+              disabled={isLoading}
+              className={`py-3.5 px-9 rounded-lg font-dm-sans text-[0.92rem] font-medium tracking-wide transition-all relative overflow-hidden ${
+                isLoading 
+                  ? "bg-landing-tan text-white cursor-not-allowed" 
+                  : "bg-landing-red text-white cursor-pointer hover:bg-landing-red-light hover:-translate-y-0.5 active:translate-y-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-br after:from-white/15 after:to-transparent"
+              }`}
             >
-              Registrarse
+              {isLoading ? "Enviando..." : "Registrarse"}
             </button>
             <Link href="/pages/login" className="text-landing-red text-[0.88rem] flex items-center gap-1.5 transition-all hover:gap-2.5">
               Iniciar sesión &rarr;
@@ -103,6 +232,7 @@ export function RegisterForm() {
           </div>
         </form>
 
+        {/* Sección inferior con botones de redes sociales... */}
         <div className="flex items-center gap-4 my-7">
           <hr className="flex-1 border-t border-landing-sand" />
           <span className="text-[0.72rem] text-landing-text-muted tracking-widest uppercase">
@@ -110,9 +240,10 @@ export function RegisterForm() {
           </span>
           <hr className="flex-1 border-t border-landing-sand" />
         </div>
-
+        
         <div className="grid grid-cols-2 gap-3.5">
-          <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-landing-sand rounded-lg bg-transparent font-dm-sans text-[0.8rem] text-landing-text-muted cursor-pointer transition-all hover:border-landing-tan hover:bg-landing-cream hover:text-landing-text">
+           {/* Botones de Google y Facebook (mantienen su código original) */}
+           <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-landing-sand rounded-lg bg-transparent font-dm-sans text-[0.8rem] text-landing-text-muted cursor-pointer transition-all hover:border-landing-tan hover:bg-landing-cream hover:text-landing-text">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

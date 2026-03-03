@@ -8,8 +8,8 @@ export function RegisterHero() {
     <div className="bg-landing-cream relative flex flex-col items-center justify-center overflow-hidden p-12 before:content-[''] before:absolute before:inset-0 before:bg-[url('data:image/svg+xml,%3Csvg_viewBox=%270_0_512_512%27_xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter_id=%27noise%27%3E%3CfeTurbulence_type=%27fractalNoise%27_baseFrequency=%270.75%27_numOctaves=%274%27_stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect_width=%27100%25%27_height=%27100%25%27_filter=%27url(%23noise)%27_opacity=%270.04%27/%3E%3C/svg%3E')] before:pointer-events-none before:z-1 after:content-[''] after:absolute after:w-[600px] after:h-[600px] after:bg-[radial-gradient(circle,rgba(125,31,46,0.08)_0%,transparent_70%)] after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:pointer-events-none">
       
       {/* Top logo */}
-      <div className="absolute top-6 left-12 flex items-center gap-2 font-playfair text-[0.85rem] font-bold text-landing-dark tracking-wide z-2">
-        Quill
+      <div className="absolute top-6 left-12 flex items-center gap-2">
+        <Link href="/" className="font-playfair text-[0.85rem] font-bold text-landing-dark tracking-wide z-2">Quill</Link>
       </div>
 
       {/* Floating quote card */}

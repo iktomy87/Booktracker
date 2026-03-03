@@ -116,8 +116,9 @@ public class AuthenticationService {
 
         try {
             emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             // Handle email sending exception
+            System.err.println("Error sending verification email: " + e.getMessage());
             e.printStackTrace();
         }
     }
