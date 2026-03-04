@@ -1,15 +1,23 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 
 export function VerifyForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const emailParam = searchParams.get("email")
   
   // Estados para los inputs
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(emailParam || "")
   const [verificationCode, setVerificationCode] = useState("")
+
+  useEffect(() => {
+    if (emailParam) {
+      setEmail(emailParam)
+    }
+  }, [emailParam])
   
   // Estados de interfaz
   const [isLoading, setIsLoading] = useState(false)

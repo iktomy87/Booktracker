@@ -37,7 +37,7 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
-        User user = new User(input.getUsername(), input.getEmail(), passwordEncoder.encode(input.getPassword()));
+        User user = new User(input.getUsername(), input.getEmail().trim(), passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
@@ -46,7 +46,7 @@ public class AuthenticationService {
     }
 
     public User authenticate(LoginUserDto input) {
-        User user = userRepository.findByEmail(input.getEmail())
+        User user = userRepository.findByEmail(input.getEmail().trim())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.isEnabled()) {
@@ -54,7 +54,7 @@ public class AuthenticationService {
         }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
+                        input.getEmail().trim(),
                         input.getPassword()
                 )
         );
@@ -63,13 +63,16 @@ public class AuthenticationService {
     }
 
     public void verifyUser(VerifyUserDto input) {
-        Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
+        Optional<User> optionalUser = userRepository.findByEmail(input.getEmail().trim());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (user.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
+            if (user.isEnabled()) {
+                throw new RuntimeException("Account is already verified");
+            }
+            if (user.getVerificationCodeExpiresAt() == null || user.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
                 throw new RuntimeException("Verification code has expired");
             }
-            if (user.getVerificationCode().equals(input.getVerificationCode())) {
+            if (user.getVerificationCode() != null && user.getVerificationCode().equals(input.getVerificationCode().trim())) {
                 user.setEnabled(true);
                 user.setVerificationCode(null);
                 user.setVerificationCodeExpiresAt(null);
@@ -83,7 +86,7 @@ public class AuthenticationService {
     }
 
     public void resendVerificationCode(String email) {
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        Optional<User> optionalUser = userRepository.findByEmail(email.trim());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (user.isEnabled()) {
@@ -100,7 +103,6 @@ public class AuthenticationService {
 
     private void sendVerificationEmail(User user) { //TODO: Update with company logo
         String subject = "Account Verification";
-        String verificationCode = "VERIFICATION CODE " + user.getVerificationCode();
         String htmlMessage = "<html>"
                 + "<body style=\"font-family: Arial, sans-serif;\">"
                 + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
@@ -108,8 +110,9 @@ public class AuthenticationService {
                 + "<p style=\"font-size: 16px;\">Please enter the verification code below to continue:</p>"
                 + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
                 + "<h3 style=\"color: #333;\">Verification Code:</h3>"
-                + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + verificationCode + "</p>"
+                + "<p style=\"font-size: 24px; font-weight: bold; color: #007bff; letter-spacing: 5px;\">" + user.getVerificationCode() + "</p>"
                 + "</div>"
+                + "<p style=\"font-size: 12px; color: #666; margin-top: 20px;\">This code will expire in 15 minutes.</p>"
                 + "</div>"
                 + "</body>"
                 + "</html>";

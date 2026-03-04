@@ -67,34 +67,9 @@ export function RegisterForm() {
         throw new Error(errorData || "Ocurrió un error al registrar el usuario.")
       }
 
-      router.push("/pages/verify")
-      // Si todo sale bien
+      // 3. REDIRIGIR A LA PÁGINA DE VERIFICACIÓN PASANDO EL EMAIL
+      router.push(`/pages/verify?email=${encodeURIComponent(email)}`)
       setSuccess(true)
-
-      const loginRes = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      })
-
-      if (loginRes.ok) {
-        const loginData = await loginRes.json()
-        
-        // Guardamos el token en el almacenamiento del navegador
-        localStorage.setItem("token", loginData.token)
-        
-        // 3. REDIRIGIR A LA BIBLIOTECA (Agregamos un mini retraso para que se vea el msj de éxito)
-        setTimeout(() => {
-          router.push("/pages/homepage")
-        }, 1500)
-        
-      } else {
-        // Si por alguna razón el login falla, lo mandamos a la página de login manual
-        router.push("/pages/login")
-      }
       
       // Limpiar el formulario tras el éxito
       setUsername("")

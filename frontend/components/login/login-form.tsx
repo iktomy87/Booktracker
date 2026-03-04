@@ -48,8 +48,8 @@ export function LoginForm() {
         
         // Comprobamos si el error es porque falta verificar
         if (errorData.includes("Account not verified")) {
-          // Si no está verificado, lo mandamos directo a la página de verificación
-          router.push("/pages/verify")
+          // Si no está verificado, lo mandamos directo a la página de verificación con el email
+          router.push(`/pages/verify?email=${encodeURIComponent(email)}`)
           return 
         }
         
