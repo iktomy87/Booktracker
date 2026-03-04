@@ -4,13 +4,13 @@ import { Suspense } from "react"
 
 export default function VerifyPage() {
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      <Suspense fallback={<div>Cargando...</div>}>
-        <VerifyForm />
-      </Suspense>
-      <div className="hidden lg:block">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[52%_48%] font-dm-sans bg-landing-warm-white selection:bg-landing-red/20 overflow-x-hidden">
         <RegisterHero />
-      </div>
+        <Suspense fallback={<div>Cargando...</div>}>
+          <VerifyForm />
+        </Suspense>
     </div>
   )
 }
+
+
