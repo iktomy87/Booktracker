@@ -9,4 +9,6 @@ import com.booktracker.demo.model.User;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     Optional<User> findByVerificationCode(String verificationCode);
+    Optional<User> findByUsername(String username);
+    
 }

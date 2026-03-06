@@ -1,7 +1,9 @@
 "use client"
 
-import { Home, BookOpen, Settings } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { BookOpen, Home, Settings } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
 
 const navItems = [
   { icon: Home, label: "Inicio", active: true },
@@ -12,30 +14,17 @@ const navItems = [
 export function Sidebar() {
   return (
     <aside className="hidden w-24 flex-col items-center border-r-0 bg-background pt-6 lg:flex">
-      <div className="mb-8">
-        <svg
-          className="h-12 w-14 text-foreground"
-          viewBox="0 0 56 48"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {/* Left lens */}
-          <circle cx="14" cy="28" r="10" />
-          {/* Right lens */}
-          <circle cx="42" cy="28" r="10" />
-          {/* Bridge */}
-          <path d="M24 28h8" />
-          {/* Left temple curl */}
-          <path d="M4 28c0-4 2-10 10-10" />
-          <path d="M4 28c-2-6 0-12 4-16" />
-          {/* Right temple curl */}
-          <path d="M52 28c0-4-2-10-10-10" />
-          <path d="M52 28c2-6 0-12-4-16" />
-        </svg>
-      </div>
+    <Link href="/" className="flex items-center gap-2.5 no-underline">
+        <div className="relative h-9 md:h-17 w-10">
+            <Image
+              src="/gafas.png" 
+              alt="Quill Logo"
+              fill 
+              className="object-contain object-top"
+              priority 
+            />
+          </div>
+      </Link>
       <nav className="flex flex-1 flex-col items-center gap-3">
         {navItems.map((item) => (
           <button
