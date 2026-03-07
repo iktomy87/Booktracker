@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Folio — Añadir libro</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:      #f0ebe0;
+    --warm-white: #faf7f2;
+    --sand:       #e2d8c4;
+    --tan:        #c9b99a;
+    --dark:       #2a1f14;
+    --red:        #8c2030;
+    --red-light:  #b8394d;
+    --green:      #3d6e32;
+    --green-soft: #edf3e8;
+    --text:       #3d2e1e;
+    --muted:      #8a7560;
+    --sidebar-w:  80px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--cream); color:var(--text); font-family:'DM Sans',sans-serif; display:flex; min-height:100vh; }
+
+  /* ══ SIDEBAR ══ */
+  .sidebar { width:var(--sidebar-w); background:var(--cream); border-right:1px solid var(--sand); display:flex; flex-direction:column; align-items:center; padding:1.5rem 0; position:fixed; top:0; left:0; bottom:0; z-index:50; }
+  .sidebar-logo { margin-bottom:2.2rem; }
+  .sidebar-logo svg { width:34px; height:34px; }
+  .nav-icon { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); transition:background .2s,color .2s; margin-bottom:4px; }
+  .nav-icon:hover { background:var(--sand); color:var(--text); }
+  .nav-icon.active { background:var(--dark); color:var(--warm-white); }
+  .sidebar-spacer { flex:1; }
+
+  /* ══ MAIN ══ */
+  .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; }
+
+  /* ══ TOPBAR ══ */
+  .topbar { height:64px; border-bottom:1px solid var(--sand); display:flex; align-items:center; padding:0 2.5rem; gap:1rem; position:sticky; top:0; background:rgba(240,235,224,0.92); backdrop-filter:blur(14px); z-index:40; }
+  .back-btn { display:flex; align-items:center; gap:.5rem; color:var(--muted); font-size:.84rem; cursor:pointer; transition:color .2s; border:none; background:none; font-family:'DM Sans',sans-serif; }
+  .back-btn:hover { color:var(--text); }
+  .topbar-divider { width:1px; height:20px; background:var(--sand); }
+  .topbar-title { font-family:'Playfair Display',serif; font-size:.95rem; font-weight:500; color:var(--dark); }
+  .topbar-right { margin-left:auto; display:flex; align-items:center; gap:1.2rem; }
+  .user-pill { display:flex; align-items:center; gap:.6rem; cursor:pointer; }
+  .user-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#c9b99a,#8a7560); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:.85rem; font-weight:600; color:var(--warm-white); }
+  .user-name { font-size:.85rem; font-weight:500; color:var(--text); }
+
+  /* ══ PAGE ══ */
+  .page { padding:2.5rem 2.5rem 5rem; max-width:960px; }
+
+  /* ── Step indicator ── */
+  .steps-bar {
+    display:flex; align-items:center; gap:0; margin-bottom:2.5rem;
+    animation: fadeUp .4s ease both;
+  }
+  .step-item { display:flex; align-items:center; gap:.6rem; }
+  .step-circle { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:600; flex-shrink:0; transition:all .3s; }
+  .step-circle.done  { background:var(--green); color:white; }
+  .step-circle.active { background:var(--dark); color:var(--warm-white); }
+  .step-circle.idle  { background:var(--sand); color:var(--muted); }
+  .step-label { font-size:.78rem; font-weight:500; white-space:nowrap; transition:color .3s; }
+  .step-label.active { color:var(--dark); }
+  .step-label.done   { color:var(--green); }
+  .step-label.idle   { color:var(--muted); }
+  .step-connector { flex:1; height:1px; background:var(--sand); margin:0 .8rem; min-width:30px; max-width:60px; }
+  .step-connector.done { background:var(--green); }
+
+  /* ══ PANEL SYSTEM ══ */
+  .panel { display:none; animation:fadeUp .35s ease both; }
+  .panel.active { display:block; }
+
+  /* ════════════════════════════
+     PANEL 1 — SEARCH
+  ════════════════════════════ */
+
+  .search-hero {
+    text-align:center; margin-bottom:2.2rem;
+  }
+  .search-hero h1 { font-family:'Playfair Display',serif; font-size:2rem; font-weight:500; color:var(--dark); margin-bottom:.4rem; }
+  .search-hero h1 em { font-style:italic; color:var(--red); }
+  .search-hero p { font-size:.88rem; color:var(--muted); font-weight:300; }
+
+  /* Big search box */
+  .big-search-wrap {
+    position:relative; margin-bottom:1.2rem;
+  }
+  .big-search-wrap svg.search-ico {
+    position:absolute; left:1.2rem; top:50%; transform:translateY(-50%);
+    width:20px; height:20px; color:var(--muted); pointer-events:none;
+  }
+  .big-search-input {
+    width:100%; padding:1.1rem 1.4rem 1.1rem 3.2rem;
+    background:var(--warm-white); border:2px solid var(--sand);
+    border-radius:16px; font-family:'DM Sans',sans-serif;
+    font-size:1rem; color:var(--text); outline:none;
+    transition:border-color .2s, box-shadow .2s;
+    box-shadow:0 4px 20px rgba(42,31,20,.06);
+  }
+  .big-search-input:focus { border-color:var(--red); box-shadow:0 0 0 4px rgba(140,32,48,.07), 0 4px 20px rgba(42,31,20,.06); }
+  .big-search-input::placeholder { color:var(--muted); }
+
+  .search-filters { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.8rem; }
+  .sf-pill { padding:.3rem .85rem; border-radius:100px; border:1px solid var(--sand); background:transparent; font-family:'DM Sans',sans-serif; font-size:.75rem; color:var(--muted); cursor:pointer; transition:all .2s; }
+  .sf-pill:hover { border-color:var(--tan); color:var(--text); }
+  .sf-pill.active { background:var(--dark); color:var(--warm-white); border-color:var(--dark); }
+
+  /* Loading skeleton */
+  .skeleton-grid { display:none; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.8rem; }
+  .skeleton-card { background:var(--warm-white); border:1px solid var(--sand); border-radius:16px; padding:1.2rem; display:flex; gap:1rem; }
+  .skel { background:var(--sand); border-radius:6px; animation:shimmer 1.4s infinite; }
+  .skel-cover { width:52px; height:74px; border-radius:8px; flex-shrink:0; }
+  .skel-lines { flex:1; display:flex; flex-direction:column; gap:.4rem; padding-top:.2rem; }
+
+  @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.55} }
+
+  /* Search results */
+  .results-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); font-weight:500; margin-bottom:.9rem; display:flex; align-items:center; justify-content:space-between; }
+  .results-count { font-family:'Playfair Display',serif; font-size:.88rem; color:var(--dark); font-weight:400; text-transform:none; letter-spacing:0; }
+
+  .results-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.8rem; }
+
+  .result-card {
+    background:var(--warm-white); border:2px solid var(--sand);
+    border-radius:16px; padding:1.2rem; display:flex; gap:1rem;
+    cursor:pointer; transition:all .22s; position:relative;
+    overflow:hidden;
+  }
+  .result-card:hover { border-color:var(--tan); box-shadow:0 8px 24px rgba(42,31,20,.08); transform:translateY(-2px); }
+  .result-card.selected { border-color:var(--red); box-shadow:0 0 0 3px rgba(140,32,48,.1); }
+
+  .result-card::after { content:''; position:absolute; top:.7rem; right:.7rem; width:20px; height:20px; border-radius:50%; border:2px solid var(--sand); transition:all .2s; }
+  .result-card.selected::after { background:var(--red); border-color:var(--red); content:'✓'; display:flex; align-items:center; justify-content:center; color:white; font-size:.6rem; font-weight:700; }
+
+  .rc-cover {
+    width:52px; height:74px; border-radius:7px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:.45rem;
+    text-align:center; font-weight:700; letter-spacing:.04em; line-height:1.4; padding:.3rem;
+    box-shadow:2px 3px 10px rgba(42,31,20,.18);
+  }
+  .rc-info { flex:1; min-width:0; padding-right:1.2rem; }
+  .rc-title { font-family:'Playfair Display',serif; font-size:.9rem; font-weight:500; color:var(--dark); line-height:1.25; margin-bottom:.18rem; }
+  .rc-author { font-size:.75rem; color:var(--red); margin-bottom:.35rem; }
+  .rc-meta { display:flex; gap:.5rem; flex-wrap:wrap; }
+  .rc-tag { padding:.12rem .5rem; border-radius:100px; border:1px solid var(--sand); font-size:.62rem; color:var(--muted); }
+  .rc-rating { font-size:.68rem; color:var(--muted); display:flex; align-items:center; gap:.2rem; margin-top:.3rem; }
+  .star-g { color:#c9a040; }
+
+  /* Not found banner */
+  .not-found-banner {
+    background:var(--warm-white); border:1px dashed var(--tan);
+    border-radius:16px; padding:1.6rem 2rem;
+    display:flex; align-items:center; gap:1.4rem;
+    cursor:pointer; transition:all .22s; margin-bottom:1.8rem;
+  }
+  .not-found-banner:hover { border-color:var(--red); background:#fdf6f0; }
+  .nf-icon { width:48px; height:48px; border-radius:14px; background:var(--cream); border:1px solid var(--sand); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+  .nf-text h4 { font-family:'Playfair Display',serif; font-size:.95rem; font-weight:500; color:var(--dark); margin-bottom:.2rem; }
+  .nf-text p { font-size:.78rem; color:var(--muted); font-weight:300; }
+  .nf-arrow { margin-left:auto; color:var(--muted); font-size:1.1rem; flex-shrink:0; transition:transform .2s; }
+  .not-found-banner:hover .nf-arrow { transform:translateX(4px); color:var(--red); }
+
+  /* ════════════════════════════
+     PANEL 2 — BOOK STATUS
+  ════════════════════════════ */
+
+  .selected-book-preview {
+    background:var(--dark); border-radius:20px;
+    padding:1.8rem 2rem; display:flex; gap:1.6rem;
+    align-items:flex-start; margin-bottom:1.8rem; position:relative; overflow:hidden;
+  }
+  .selected-book-preview::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 80% 50%, rgba(140,32,48,.3) 0%, transparent 60%); pointer-events:none; }
+
+  .sbp-cover { width:80px; height:112px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:.55rem; text-align:center; font-weight:700; letter-spacing:.05em; line-height:1.5; padding:.5rem; box-shadow:5px 7px 22px rgba(0,0,0,.3); position:relative; z-index:1; }
+  .sbp-info { position:relative; z-index:1; }
+  .sbp-label { font-size:.62rem; text-transform:uppercase; letter-spacing:.12em; color:rgba(250,247,242,.45); margin-bottom:.4rem; }
+  .sbp-title { font-family:'Playfair Display',serif; font-size:1.45rem; font-weight:500; color:var(--warm-white); line-height:1.2; margin-bottom:.25rem; }
+  .sbp-author { font-size:.84rem; color:#e8a0a8; margin-bottom:.9rem; }
+  .sbp-tags { display:flex; gap:.4rem; flex-wrap:wrap; }
+  .sbp-tag { padding:.18rem .6rem; border-radius:100px; background:rgba(255,255,255,.1); font-size:.65rem; color:rgba(250,247,242,.7); }
+  .sbp-change { position:absolute; top:1.4rem; right:1.6rem; z-index:1; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); color:rgba(250,247,242,.75); padding:.3rem .8rem; border-radius:100px; font-size:.7rem; cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif; }
+  .sbp-change:hover { background:rgba(255,255,255,.2); color:var(--warm-white); }
+
+  /* Status selector */
+  .status-section { margin-bottom:1.8rem; }
+  .sec-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.11em; color:var(--muted); font-weight:500; margin-bottom:.9rem; }
+
+  .status-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; }
+  .status-card {
+    border:2px solid var(--sand); border-radius:14px; padding:1.1rem;
+    cursor:pointer; transition:all .22s; text-align:center; background:var(--warm-white);
+  }
+  .status-card:hover { border-color:var(--tan); }
+  .status-card.selected { border-color:var(--red); background:rgba(140,32,48,.04); }
+  .status-card .sc-emoji { font-size:1.5rem; display:block; margin-bottom:.4rem; }
+  .status-card .sc-name { font-size:.82rem; font-weight:500; color:var(--dark); margin-bottom:.15rem; }
+  .status-card .sc-desc { font-size:.7rem; color:var(--muted); font-weight:300; }
+
+  /* Conditional fields */
+  .cond-fields { animation:fadeUp .3s ease both; }
+  .field-group { margin-bottom:1.2rem; }
+  .field-group label { display:block; font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.45rem; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+  .field-input {
+    width:100%; padding:.7rem 1rem; background:var(--cream); border:1px solid var(--sand);
+    border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.88rem; color:var(--text); outline:none; transition:border-color .2s, box-shadow .2s;
+  }
+  .field-input:focus { border-color:var(--red); box-shadow:0 0 0 3px rgba(140,32,48,.07); }
+  .field-input::placeholder { color:var(--muted); }
+  .field-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a7560' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right .9rem center; cursor:pointer; }
+
+  /* Star picker */
+  .star-picker { display:flex; gap:.3rem; align-items:center; }
+  .sp-star { font-size:1.6rem; cursor:pointer; color:var(--sand); transition:color .15s, transform .15s; line-height:1; }
+  .sp-star:hover, .sp-star.lit { color:#c9a040; }
+  .sp-star:hover { transform:scale(1.15); }
+
+  /* Tags input */
+  .tags-wrap { display:flex; flex-wrap:wrap; gap:.4rem; padding:.55rem .7rem; background:var(--cream); border:1px solid var(--sand); border-radius:10px; cursor:text; transition:border-color .2s; min-height:44px; align-items:center; }
+  .tags-wrap:focus-within { border-color:var(--red); box-shadow:0 0 0 3px rgba(140,32,48,.07); }
+  .tag-chip { background:var(--dark); color:var(--warm-white); padding:.2rem .55rem; border-radius:100px; font-size:.72rem; display:flex; align-items:center; gap:.35rem; }
+  .tag-chip button { background:none; border:none; color:rgba(250,247,242,.6); cursor:pointer; font-size:.75rem; line-height:1; padding:0; transition:color .15s; }
+  .tag-chip button:hover { color:var(--warm-white); }
+  .tag-input { border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:.82rem; color:var(--text); outline:none; min-width:80px; flex:1; }
+  .tag-input::placeholder { color:var(--muted); }
+
+  /* ════════════════════════════
+     PANEL 3 — MANUAL CREATE
+  ════════════════════════════ */
+
+  .create-layout { display:grid; grid-template-columns:1fr 280px; gap:2rem; }
+
+  /* Cover builder */
+  .cover-builder { display:flex; flex-direction:column; gap:1rem; }
+
+  .cover-preview {
+    width:140px; height:196px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:.7rem;
+    text-align:center; font-weight:700; letter-spacing:.06em; line-height:1.5;
+    box-shadow:6px 8px 24px rgba(42,31,20,.2); transition:all .3s;
+    padding:.8rem; word-break:break-word;
+    margin:0 auto;
+  }
+
+  .cover-palettes { display:grid; grid-template-columns:repeat(5,1fr); gap:.4rem; }
+  .palette-swatch { aspect-ratio:1; border-radius:8px; cursor:pointer; border:2px solid transparent; transition:all .2s; }
+  .palette-swatch:hover { transform:scale(1.1); }
+  .palette-swatch.selected { border-color:var(--dark); box-shadow:0 0 0 2px var(--warm-white), 0 0 0 4px var(--dark); }
+
+  .upload-area {
+    border:1.5px dashed var(--tan); border-radius:12px;
+    padding:1.2rem; text-align:center; cursor:pointer;
+    transition:all .2s; background:var(--warm-white);
+  }
+  .upload-area:hover { border-color:var(--red); background:#fdf6f0; }
+  .upload-area p { font-size:.75rem; color:var(--muted); margin-top:.4rem; font-weight:300; }
+
+  /* Form fields */
+  .create-fields { display:flex; flex-direction:column; gap:1.1rem; }
+
+  .textarea-input { width:100%; padding:.75rem 1rem; background:var(--cream); border:1px solid var(--sand); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.85rem; color:var(--text); outline:none; resize:vertical; min-height:90px; line-height:1.6; transition:border-color .2s, box-shadow .2s; }
+  .textarea-input:focus { border-color:var(--red); box-shadow:0 0 0 3px rgba(140,32,48,.07); }
+  .textarea-input::placeholder { color:var(--muted); }
+
+  /* Genre multi-select */
+  .genre-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; }
+  .genre-chip { padding:.35rem .6rem; border-radius:8px; border:1px solid var(--sand); background:var(--warm-white); font-family:'DM Sans',sans-serif; font-size:.72rem; color:var(--muted); cursor:pointer; text-align:center; transition:all .2s; }
+  .genre-chip:hover { border-color:var(--tan); color:var(--text); }
+  .genre-chip.selected { background:var(--dark); color:var(--warm-white); border-color:var(--dark); }
+
+  /* ── Action bar (fixed bottom) ── */
+  .action-bar {
+    position:sticky; bottom:0;
+    background:rgba(240,235,224,0.95); backdrop-filter:blur(12px);
+    border-top:1px solid var(--sand);
+    padding:1rem 2.5rem;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-left:calc(-2.5rem); margin-right:calc(-2.5rem);
+    animation:slideUp .4s ease both;
+  }
+
+  .action-bar-info { font-size:.82rem; color:var(--muted); }
+  .action-bar-info strong { color:var(--dark); font-weight:500; }
+  .action-bar-btns { display:flex; gap:.8rem; align-items:center; }
+
+  .btn-secondary { padding:.65rem 1.4rem; border-radius:100px; border:1px solid var(--sand); background:transparent; font-family:'DM Sans',sans-serif; font-size:.84rem; color:var(--muted); cursor:pointer; transition:all .2s; }
+  .btn-secondary:hover { border-color:var(--tan); color:var(--text); }
+
+  .btn-primary { padding:.65rem 1.8rem; border-radius:100px; background:var(--dark); color:var(--warm-white); border:none; font-family:'DM Sans',sans-serif; font-size:.84rem; font-weight:500; cursor:pointer; transition:background .2s, transform .15s; display:flex; align-items:center; gap:.5rem; }
+  .btn-primary:hover { background:var(--red); transform:translateY(-1px); }
+  .btn-primary:disabled { background:var(--sand); color:var(--muted); cursor:not-allowed; transform:none; }
+
+  /* ── Success screen ── */
+  .success-screen { display:none; text-align:center; padding:4rem 2rem; animation:fadeUp .5s ease both; }
+  .success-screen.show { display:block; }
+  .success-cover { width:120px; height:168px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:.6rem; text-align:center; font-weight:700; letter-spacing:.05em; line-height:1.5; padding:.6rem; box-shadow:8px 10px 30px rgba(42,31,20,.2); margin:0 auto 1.8rem; animation:bookDrop .6s ease both; }
+  .success-screen h2 { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:500; color:var(--dark); margin-bottom:.4rem; }
+  .success-screen h2 em { font-style:italic; color:var(--red); }
+  .success-screen p { font-size:.88rem; color:var(--muted); font-weight:300; max-width:340px; margin:0 auto 2rem; line-height:1.65; }
+  .success-actions { display:flex; gap:.8rem; justify-content:center; }
+  .success-badge { display:inline-flex; align-items:center; gap:.5rem; background:var(--green-soft); color:var(--green); border:1px solid #c5d9b0; border-radius:100px; padding:.4rem 1rem; font-size:.78rem; font-weight:500; margin-bottom:1.4rem; }
+
+  /* cover colors */
+  .cv1  { background:linear-gradient(155deg,#1a2f0e,#3a5a20); color:#a8c87a; }
+  .cv2  { background:linear-gradient(155deg,#0d1a2e,#1e3a5a); color:#7ab0d0; }
+  .cv3  { background:linear-gradient(155deg,#2e0d0d,#6a1e20); color:#f0b0b0; }
+  .cv4  { background:linear-gradient(155deg,#2e2010,#6a4010); color:#f0d0a0; }
+  .cv5  { background:linear-gradient(155deg,#1a1a35,#352a6a); color:#c0b0f0; }
+  .cv6  { background:linear-gradient(155deg,#0a2020,#1a4a40); color:#80d0c0; }
+  .cv7  { background:linear-gradient(155deg,#2a1408,#6a3010); color:#f0c090; }
+  .cv8  { background:linear-gradient(155deg,#200a20,#4a1a50); color:#e0a0e0; }
+
+  /* ══ TOAST ══ */
+  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(60px); background:var(--dark); color:var(--warm-white); padding:.85rem 1.5rem; border-radius:14px; display:flex; align-items:center; gap:.6rem; font-size:.86rem; box-shadow:0 8px 28px rgba(42,31,20,.25); z-index:200; opacity:0; transition:transform .35s ease, opacity .35s ease; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes bookDrop { from{opacity:0;transform:translateY(-30px) rotate(-3deg)} to{opacity:1;transform:translateY(0) rotate(0)} }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo"><svg viewBox="0 0 36 36" fill="none"><circle cx="12" cy="14" r="8" stroke="#2a1f14" stroke-width="2.2" fill="none"/><circle cx="24" cy="14" r="8" stroke="#2a1f14" stroke-width="2.2" fill="none"/><line x1="7" y1="30" x2="29" y2="30" stroke="#2a1f14" stroke-width="2.2" stroke-linecap="round"/><circle cx="18" cy="30" r="1.8" fill="#2a1f14"/></svg></div>
+  <div class="nav-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+  <div class="nav-icon active"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+  <div class="nav-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+  <div class="nav-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+  <div class="sidebar-spacer"></div>
+  <div class="nav-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+</aside>
+
+<div class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="back-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg> Mi Biblioteca</button>
+    <div class="topbar-divider"></div>
+    <span class="topbar-title">Añadir libro</span>
+    <div class="topbar-right">
+      <div class="user-pill"><div class="user-avatar">M</div><span class="user-name">Michelle</span></div>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <!-- STEP INDICATOR -->
+    <div class="steps-bar" id="steps-bar">
+      <div class="step-item">
+        <div class="step-circle active" id="sc1">1</div>
+        <span class="step-label active" id="sl1">Buscar libro</span>
+      </div>
+      <div class="step-connector" id="conn1"></div>
+      <div class="step-item">
+        <div class="step-circle idle" id="sc2">2</div>
+        <span class="step-label idle" id="sl2">Estado & detalles</span>
+      </div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="step-item">
+        <div class="step-circle idle" id="sc3">3</div>
+        <span class="step-label idle" id="sl3">Listo</span>
+      </div>
+    </div>
+
+    <!-- ══ PANEL 1: SEARCH ══ -->
+    <div class="panel active" id="panel-search">
+      <div class="search-hero">
+        <h1>¿Qué libro quieres <em>añadir?</em></h1>
+        <p>Busca por título, autor o ISBN. Si no lo encuentras, puedes crearlo.</p>
+      </div>
+
+      <div class="big-search-wrap">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="big-search-input" id="main-search" type="text" placeholder="Ej: Cien años de soledad, García Márquez, 978-…">
+      </div>
+
+      <div class="search-filters">
+        <button class="sf-pill active" data-filter="all">Todos</button>
+        <button class="sf-pill" data-filter="fiction">Ficción</button>
+        <button class="sf-pill" data-filter="classic">Clásicos</button>
+        <button class="sf-pill" data-filter="mystery">Misterio</button>
+        <button class="sf-pill" data-filter="fantasy">Fantasía</button>
+        <button class="sf-pill" data-filter="poetry">Poesía</button>
+        <button class="sf-pill" data-filter="essay">Ensayo</button>
+      </div>
+
+      <!-- Empty state -->
+      <div id="empty-state" style="text-align:center;padding:3.5rem 0;">
+        <div style="font-size:2.5rem;margin-bottom:.8rem;opacity:.4">📚</div>
+        <p style="font-size:.88rem;color:var(--muted);font-weight:300;">Empieza a escribir para buscar en más de 12.000 títulos</p>
+      </div>
+
+      <!-- Skeleton (loading) -->
+      <div class="skeleton-grid" id="skeleton">
+        <div class="skeleton-card"><div class="skel skel-cover"></div><div class="skel-lines"><div class="skel" style="height:14px;width:80%"></div><div class="skel" style="height:11px;width:55%"></div><div class="skel" style="height:11px;width:40%"></div></div></div>
+        <div class="skeleton-card"><div class="skel skel-cover"></div><div class="skel-lines"><div class="skel" style="height:14px;width:70%"></div><div class="skel" style="height:11px;width:50%"></div><div class="skel" style="height:11px;width:45%"></div></div></div>
+        <div class="skeleton-card"><div class="skel skel-cover"></div><div class="skel-lines"><div class="skel" style="height:14px;width:85%"></div><div class="skel" style="height:11px;width:60%"></div><div class="skel" style="height:11px;width:35%"></div></div></div>
+        <div class="skeleton-card"><div class="skel skel-cover"></div><div class="skel-lines"><div class="skel" style="height:14px;width:65%"></div><div class="skel" style="height:11px;width:45%"></div><div class="skel" style="height:11px;width:50%"></div></div></div>
+      </div>
+
+      <!-- Results -->
+      <div id="results-wrap" style="display:none">
+        <div class="results-label">
+          Resultados
+          <span class="results-count" id="results-count"></span>
+        </div>
+        <div class="results-grid" id="results-grid"></div>
+
+        <!-- Not found -->
+        <div class="not-found-banner" id="not-found-btn">
+          <div class="nf-icon">✏️</div>
+          <div class="nf-text">
+            <h4>¿No encontrás tu libro?</h4>
+            <p>Crealo manualmente con título, autor y portada propia</p>
+          </div>
+          <span class="nf-arrow">→</span>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div class="action-bar">
+        <span class="action-bar-info" id="search-action-info">Selecciona un libro para continuar</span>
+        <div class="action-bar-btns">
+          <button class="btn-secondary" onclick="goCreateManual()">✏️ Crear manualmente</button>
+          <button class="btn-primary" id="btn-next-1" disabled onclick="goToStep2()">
+            Continuar
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL 2: STATUS ══ -->
+    <div class="panel" id="panel-status">
+
+      <!-- Selected book preview -->
+      <div class="selected-book-preview" id="sbp">
+        <div class="sbp-cover cv1" id="sbp-cover">CIEN AÑOS<br>DE SOLEDAD</div>
+        <div class="sbp-info">
+          <div class="sbp-label">Libro seleccionado</div>
+          <div class="sbp-title" id="sbp-title">Cien Años de Soledad</div>
+          <div class="sbp-author" id="sbp-author">Gabriel García Márquez</div>
+          <div class="sbp-tags">
+            <span class="sbp-tag" id="sbp-year">1967</span>
+            <span class="sbp-tag" id="sbp-pages">471 pág.</span>
+            <span class="sbp-tag" id="sbp-genre">Realismo mágico</span>
+          </div>
+        </div>
+        <button class="sbp-change" onclick="goToStep1()">← Cambiar</button>
+      </div>
+
+      <!-- Status selector -->
+      <div class="status-section">
+        <div class="sec-label">¿En qué estado está este libro para ti?</div>
+        <div class="status-grid">
+          <div class="status-card" data-status="reading" onclick="selectStatus('reading')">
+            <span class="sc-emoji">📖</span>
+            <div class="sc-name">Leyendo ahora</div>
+            <div class="sc-desc">Lo estoy leyendo actualmente</div>
+          </div>
+          <div class="status-card" data-status="finished" onclick="selectStatus('finished')">
+            <span class="sc-emoji">✅</span>
+            <div class="sc-name">Ya lo leí</div>
+            <div class="sc-desc">Lo terminé en el pasado</div>
+          </div>
+          <div class="status-card" data-status="wishlist" onclick="selectStatus('wishlist')">
+            <span class="sc-emoji">📚</span>
+            <div class="sc-name">Quiero leerlo</div>
+            <div class="sc-desc">Lo agrego a mi lista</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conditional fields (reading) -->
+      <div class="cond-fields" id="fields-reading" style="display:none">
+        <div class="sec-label">Detalle de progreso</div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Página actual</label>
+            <input type="number" class="field-input" placeholder="Ej: 120" min="0" max="999">
+          </div>
+          <div class="field-group">
+            <label>Fecha de inicio</label>
+            <input type="date" class="field-input" id="date-start-r">
+          </div>
+        </div>
+      </div>
+
+      <!-- Conditional fields (finished) -->
+      <div class="cond-fields" id="fields-finished" style="display:none">
+        <div class="sec-label">Detalle de lectura</div>
+        <div class="field-row" style="margin-bottom:1.2rem">
+          <div class="field-group">
+            <label>Fecha de inicio</label>
+            <input type="date" class="field-input" id="date-start-f">
+          </div>
+          <div class="field-group">
+            <label>Fecha de fin</label>
+            <input type="date" class="field-input" id="date-end-f">
+          </div>
+        </div>
+        <div class="field-group" style="margin-bottom:1.2rem">
+          <label>Tu valoración</label>
+          <div class="star-picker" id="star-picker">
+            <span class="sp-star" data-v="1">★</span>
+            <span class="sp-star" data-v="2">★</span>
+            <span class="sp-star" data-v="3">★</span>
+            <span class="sp-star" data-v="4">★</span>
+            <span class="sp-star" data-v="5">★</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Reseña corta (opcional)</label>
+          <textarea class="field-input textarea-input" placeholder="¿Qué te pareció? Una frase o párrafo…" rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Common fields (always shown after selection) -->
+      <div class="cond-fields" id="fields-common" style="display:none">
+        <div class="sec-label">Etiquetas personales</div>
+        <div class="field-group">
+          <div class="tags-wrap" id="tags-wrap" onclick="document.getElementById('tag-input').focus()">
+            <input class="tag-input" id="tag-input" placeholder="Añadir etiqueta y presionar Enter…" maxlength="30">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Notas privadas (opcional)</label>
+          <textarea class="field-input textarea-input" placeholder="Algo que quieras recordar sobre este libro…" rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div class="action-bar">
+        <span class="action-bar-info" id="status-action-info">Selecciona el estado del libro</span>
+        <div class="action-bar-btns">
+          <button class="btn-secondary" onclick="goToStep1()">← Atrás</button>
+          <button class="btn-primary" id="btn-next-2" disabled onclick="goToStep3()">
+            Añadir a mi biblioteca
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL 3: MANUAL CREATE ══ -->
+    <div class="panel" id="panel-create">
+      <div style="margin-bottom:1.6rem">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:500;color:var(--dark);margin-bottom:.3rem">Crear libro manualmente</h2>
+        <p style="font-size:.85rem;color:var(--muted);font-weight:300">Completa los datos del libro que no está en el catálogo</p>
+      </div>
+
+      <div class="create-layout">
+
+        <!-- Fields -->
+        <div class="create-fields">
+          <div class="field-group">
+            <label>Título *</label>
+            <input type="text" class="field-input" id="create-title" placeholder="Título del libro" oninput="updateCoverPreview()">
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label>Autor *</label>
+              <input type="text" class="field-input" id="create-author" placeholder="Nombre del autor" oninput="updateCoverPreview()">
+            </div>
+            <div class="field-group">
+              <label>Año de publicación</label>
+              <input type="number" class="field-input" placeholder="Ej: 2001" min="1000" max="2099">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label>Editorial</label>
+              <input type="text" class="field-input" placeholder="Ej: Alfaguara">
+            </div>
+            <div class="field-group">
+              <label>Número de páginas</label>
+              <input type="number" class="field-input" placeholder="Ej: 320" min="1">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label>ISBN (opcional)</label>
+              <input type="text" class="field-input" placeholder="978-…">
+            </div>
+            <div class="field-group">
+              <label>Idioma</label>
+              <select class="field-input field-select">
+                <option>Español</option><option>Inglés</option><option>Francés</option><option>Portugués</option><option>Alemán</option><option>Italiano</option><option>Otro</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Géneros</label>
+            <div class="genre-grid" id="genre-grid">
+              <div class="genre-chip" data-g="fiction">Ficción</div>
+              <div class="genre-chip" data-g="classic">Clásico</div>
+              <div class="genre-chip" data-g="mystery">Misterio</div>
+              <div class="genre-chip" data-g="fantasy">Fantasía</div>
+              <div class="genre-chip" data-g="romance">Romance</div>
+              <div class="genre-chip" data-g="poetry">Poesía</div>
+              <div class="genre-chip" data-g="essay">Ensayo</div>
+              <div class="genre-chip" data-g="biography">Biografía</div>
+              <div class="genre-chip" data-g="scifi">Ciencia Fic.</div>
+              <div class="genre-chip" data-g="horror">Terror</div>
+              <div class="genre-chip" data-g="history">Histórico</div>
+              <div class="genre-chip" data-g="other">Otro</div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Sinopsis (opcional)</label>
+            <textarea class="field-input textarea-input" placeholder="Una breve descripción del libro…" rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- Cover builder -->
+        <div class="cover-builder">
+          <div class="sec-label" style="margin-bottom:.5rem">Portada</div>
+          <div class="cover-preview cv1" id="cover-preview">
+            TÍTULO<br>DEL<br>LIBRO
+          </div>
+          <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:.5rem 0 .4rem">Color de fondo</div>
+          <div class="cover-palettes">
+            <div class="palette-swatch cv1 selected" data-cv="cv1"></div>
+            <div class="palette-swatch cv2" data-cv="cv2"></div>
+            <div class="palette-swatch cv3" data-cv="cv3"></div>
+            <div class="palette-swatch cv4" data-cv="cv4"></div>
+            <div class="palette-swatch cv5" data-cv="cv5"></div>
+            <div class="palette-swatch cv6" data-cv="cv6"></div>
+            <div class="palette-swatch cv7" data-cv="cv7"></div>
+            <div class="palette-swatch cv8" data-cv="cv8"></div>
+          </div>
+          <div class="upload-area" style="margin-top:.8rem">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--tan);display:block;margin:0 auto .4rem"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p>Subir imagen de portada</p>
+            <p style="font-size:.65rem;margin-top:.15rem">JPG, PNG · máx. 5 MB</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div class="action-bar">
+        <span class="action-bar-info">* Campos obligatorios</span>
+        <div class="action-bar-btns">
+          <button class="btn-secondary" onclick="goToStep1()">← Buscar en catálogo</button>
+          <button class="btn-primary" id="btn-create" onclick="goToStatusFromCreate()">
+            Continuar con este libro
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUCCESS ══ -->
+    <div class="success-screen" id="success-screen">
+      <div class="success-cover cv1" id="success-cover">CIEN AÑOS<br>DE SOLEDAD</div>
+      <div class="success-badge">✓ Añadido a tu biblioteca</div>
+      <h2>¡<em>Perfecto</em>, Michelle!</h2>
+      <p id="success-msg">Cien Años de Soledad fue añadido a tu biblioteca. ¡A disfrutarlo!</p>
+      <div class="success-actions">
+        <button class="btn-primary" onclick="location.reload()">+ Añadir otro libro</button>
+        <button class="btn-secondary" style="border-radius:100px">Ver mi biblioteca →</button>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+<div class="toast" id="toast"><span>✓</span><span id="toast-msg">Listo</span></div>
+
+<script>
+  /* ════ MOCK DATA ════ */
+  const BOOKS = [
+    { id:1, title:'Cien Años de Soledad', author:'Gabriel García Márquez', year:'1967', pages:471, genre:'Realismo mágico', cv:'cv1', rating:4.9, reviews:'12k', tags:['Latinoam.','Premio Nobel'] },
+    { id:2, title:'The Great Gatsby', author:'F. Scott Fitzgerald', year:'1925', pages:180, genre:'Ficción americana', cv:'cv2', rating:4.7, reviews:'9.2k', tags:['Clásico','Jazz Age'] },
+    { id:3, title:'Asesinato en el Orient Express', author:'Agatha Christie', year:'1934', pages:256, genre:'Misterio', cv:'cv3', rating:4.8, reviews:'8k', tags:['Poirot','Thriller'] },
+    { id:4, title:'El Señor de los Anillos', author:'J.R.R. Tolkien', year:'1954', pages:1216, genre:'Fantasía épica', cv:'cv5', rating:4.9, reviews:'18k', tags:['Fantasía','Épico'] },
+    { id:5, title:'1984', author:'George Orwell', year:'1949', pages:328, genre:'Distopía', cv:'cv4', rating:4.8, reviews:'15k', tags:['Distopía','Política'] },
+    { id:6, title:'Pedro Páramo', author:'Juan Rulfo', year:'1955', pages:124, genre:'Realismo mágico', cv:'cv6', rating:4.6, reviews:'5k', tags:['Mexicano','Clásico'] },
+    { id:7, title:'Crimen y Castigo', author:'Fiódor Dostoievski', year:'1866', pages:545, genre:'Novela psicológica', cv:'cv7', rating:4.7, reviews:'10k', tags:['Ruso','Psicológico'] },
+    { id:8, title:'La Casa de los Espíritus', author:'Isabel Allende', year:'1982', pages:433, genre:'Realismo mágico', cv:'cv8', rating:4.7, reviews:'7.5k', tags:['Chileno','Saga'] },
+  ];
+
+  let selectedBook = null;
+  let selectedStatus = null;
+  let searchTimer = null;
+
+  /* ════ SEARCH ════ */
+  document.getElementById('main-search').addEventListener('input', function() {
+    const q = this.value.trim();
+    clearTimeout(searchTimer);
+    if (q.length < 2) {
+      showEmpty(); return;
+    }
+    showSkeleton();
+    searchTimer = setTimeout(() => renderResults(q), 500);
+  });
+
+  function showEmpty() {
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('results-wrap').style.display = 'none';
+  }
+  function showSkeleton() {
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('skeleton').style.display = 'grid';
+    document.getElementById('results-wrap').style.display = 'none';
+  }
+  function renderResults(q) {
+    const matches = BOOKS.filter(b =>
+      b.title.toLowerCase().includes(q.toLowerCase()) ||
+      b.author.toLowerCase().includes(q.toLowerCase()) ||
+      b.genre.toLowerCase().includes(q.toLowerCase())
+    );
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('results-wrap').style.display = 'block';
+    document.getElementById('results-count').textContent = matches.length + ' resultado' + (matches.length !== 1 ? 's' : '');
+    const grid = document.getElementById('results-grid');
+    if (matches.length === 0) {
+      grid.innerHTML = `<div style="grid-column:span 2;text-align:center;padding:2rem 0;color:var(--muted);font-size:.88rem;font-weight:300">No se encontraron resultados para "<strong style="color:var(--text)">${q}</strong>"</div>`;
+    } else {
+      grid.innerHTML = matches.map(b => `
+        <div class="result-card" data-id="${b.id}" onclick="selectBook(${b.id})">
+          <div class="rc-cover ${b.cv}">${b.title.split(' ').slice(0,3).join('<br>')}</div>
+          <div class="rc-info">
+            <div class="rc-title">${b.title}</div>
+            <div class="rc-author">${b.author}</div>
+            <div class="rc-meta">
+              <span class="rc-tag">${b.year}</span>
+              <span class="rc-tag">${b.pages} pág.</span>
+              <span class="rc-tag">${b.genre}</span>
+            </div>
+            <div class="rc-rating"><span class="star-g">★</span> ${b.rating} · ${b.reviews} reseñas</div>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  function selectBook(id) {
+    selectedBook = BOOKS.find(b => b.id === id);
+    document.querySelectorAll('.result-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`.result-card[data-id="${id}"]`).classList.add('selected');
+    document.getElementById('btn-next-1').disabled = false;
+    document.getElementById('search-action-info').innerHTML = `<strong>${selectedBook.title}</strong> seleccionado`;
+  }
+
+  /* filter pills */
+  document.querySelectorAll('.sf-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.sf-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+    });
+  });
+
+  /* ════ NOT FOUND ════ */
+  document.getElementById('not-found-btn').addEventListener('click', goCreateManual);
+
+  /* ════ STEP NAVIGATION ════ */
+  function setStep(n) {
+    ['panel-search','panel-status','panel-create'].forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById('success-screen').classList.remove('show');
+
+    // step circles
+    for (let i=1; i<=3; i++) {
+      const sc = document.getElementById('sc'+i);
+      const sl = document.getElementById('sl'+i);
+      if (i < n) { sc.className='step-circle done'; sc.textContent='✓'; sl.className='step-label done'; }
+      else if (i === n) { sc.className='step-circle active'; sc.textContent=i; sl.className='step-label active'; }
+      else { sc.className='step-circle idle'; sc.textContent=i; sl.className='step-label idle'; }
+    }
+    for (let i=1; i<=2; i++) {
+      const c = document.getElementById('conn'+i);
+      c.className = 'step-connector' + (i < n ? ' done' : '');
+    }
+  }
+
+  function goToStep1() {
+    setStep(1);
+    document.getElementById('panel-search').classList.add('active');
+  }
+
+  function goToStep2() {
+    if (!selectedBook) return;
+    setStep(2);
+    document.getElementById('panel-status').classList.add('active');
+    // populate preview
+    document.getElementById('sbp-cover').className = 'sbp-cover ' + selectedBook.cv;
+    document.getElementById('sbp-cover').innerHTML = selectedBook.title.split(' ').slice(0,4).join('<br>');
+    document.getElementById('sbp-title').textContent = selectedBook.title;
+    document.getElementById('sbp-author').textContent = selectedBook.author;
+    document.getElementById('sbp-year').textContent = selectedBook.year;
+    document.getElementById('sbp-pages').textContent = selectedBook.pages + ' pág.';
+    document.getElementById('sbp-genre').textContent = selectedBook.genre;
+  }
+
+  function goToStep3() {
+    if (!selectedStatus) return;
+    setStep(3);
+    // show success
+    const sc = document.getElementById('success-cover');
+    sc.className = 'success-cover ' + (selectedBook ? selectedBook.cv : 'cv1');
+    sc.innerHTML = selectedBook ? selectedBook.title.split(' ').slice(0,3).join('<br>') : 'LIBRO';
+    const msgs = { reading:'¡Que disfrutes la lectura!', finished:'Ya está en tu historial de libros leídos.', wishlist:'Está en tu lista de deseos. ¡Lo próximo!' };
+    document.getElementById('success-msg').textContent = (selectedBook ? selectedBook.title : 'El libro') + ' fue añadido. ' + (msgs[selectedStatus] || '');
+    document.getElementById('success-screen').classList.add('show');
+    document.getElementById('steps-bar').style.display = 'none';
+    showToast('📚 Libro añadido a tu biblioteca');
+  }
+
+  function goCreateManual() {
+    setStep(1);
+    document.getElementById('panel-create').classList.add('active');
+    document.getElementById('panel-search').classList.remove('active');
+    document.getElementById('sc1').textContent = '✎';
+    document.getElementById('sl1').textContent = 'Crear libro';
+  }
+
+  function goToStatusFromCreate() {
+    const t = document.getElementById('create-title').value.trim();
+    if (!t) { showToast('⚠ Añade al menos el título'); return; }
+    // create a fake book from form
+    selectedBook = { id:99, title:t, author:document.getElementById('create-author').value||'Autor', year:'2026', pages:0, genre:'Sin clasificar', cv:document.querySelector('.palette-swatch.selected')?.dataset.cv||'cv1' };
+    setStep(2);
+    document.getElementById('panel-create').classList.remove('active');
+    document.getElementById('panel-status').classList.add('active');
+    document.getElementById('sbp-cover').className = 'sbp-cover ' + selectedBook.cv;
+    document.getElementById('sbp-cover').innerHTML = selectedBook.title.split(' ').slice(0,4).join('<br>');
+    document.getElementById('sbp-title').textContent = selectedBook.title;
+    document.getElementById('sbp-author').textContent = selectedBook.author;
+    document.getElementById('sbp-year').textContent = selectedBook.year;
+    document.getElementById('sbp-pages').textContent = 'Manual';
+    document.getElementById('sbp-genre').textContent = selectedBook.genre;
+  }
+
+  /* ════ STATUS SELECTION ════ */
+  function selectStatus(s) {
+    selectedStatus = s;
+    document.querySelectorAll('.status-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`.status-card[data-status="${s}"]`).classList.add('selected');
+    ['reading','finished'].forEach(f => document.getElementById('fields-'+f).style.display = 'none');
+    if (s !== 'wishlist') document.getElementById('fields-'+s).style.display = 'block';
+    document.getElementById('fields-common').style.display = 'block';
+    document.getElementById('btn-next-2').disabled = false;
+    const labels = { reading:'Leyendo ahora', finished:'Ya lo leí', wishlist:'Quiero leerlo' };
+    document.getElementById('status-action-info').innerHTML = `Estado: <strong>${labels[s]}</strong>`;
+    // set today's date defaults
+    const today = new Date().toISOString().split('T')[0];
+    if (s === 'reading' && document.getElementById('date-start-r')) document.getElementById('date-start-r').value = today;
+    if (s === 'finished' && document.getElementById('date-end-f')) document.getElementById('date-end-f').value = today;
+  }
+
+  /* ════ STAR PICKER ════ */
+  document.querySelectorAll('.sp-star').forEach(star => {
+    star.addEventListener('click', () => {
+      const v = parseInt(star.dataset.v);
+      document.querySelectorAll('.sp-star').forEach(s => s.classList.toggle('lit', parseInt(s.dataset.v) <= v));
+    });
+    star.addEventListener('mouseenter', () => {
+      const v = parseInt(star.dataset.v);
+      document.querySelectorAll('.sp-star').forEach(s => { s.style.color = parseInt(s.dataset.v) <= v ? '#c9a040' : ''; });
+    });
+    star.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.sp-star').forEach(s => { s.style.color = s.classList.contains('lit') ? '#c9a040' : ''; });
+    });
+  });
+
+  /* ════ TAGS INPUT ════ */
+  document.getElementById('tag-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = this.value.trim().replace(/,/g,'');
+      if (!val) return;
+      addTag(val);
+      this.value = '';
+    }
+  });
+
+  function addTag(text) {
+    const wrap = document.getElementById('tags-wrap');
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${text}<button onclick="this.parentElement.remove()" type="button">✕</button>`;
+    wrap.insertBefore(chip, document.getElementById('tag-input'));
+  }
+
+  /* ════ COVER PALETTE ════ */
+  document.querySelectorAll('.palette-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      const prev = document.getElementById('cover-preview');
+      prev.className = 'cover-preview ' + sw.dataset.cv;
+    });
+  });
+
+  function updateCoverPreview() {
+    const t = document.getElementById('create-title').value.trim() || 'TÍTULO DEL LIBRO';
+    const a = document.getElementById('create-author').value.trim();
+    const words = t.toUpperCase().split(' ');
+    let lines = [];
+    let line = '';
+    words.forEach(w => { if ((line + ' ' + w).trim().length > 12) { lines.push(line.trim()); line = w; } else { line = (line + ' ' + w).trim(); } });
+    if (line) lines.push(line);
+    document.getElementById('cover-preview').innerHTML = lines.slice(0,4).join('<br>') + (a ? `<br><span style="font-size:.55rem;opacity:.7;margin-top:.4rem;display:block">${a.split(' ').slice(-1)[0].toUpperCase()}</span>` : '');
+  }
+
+  /* ════ GENRE CHIPS ════ */
+  document.querySelectorAll('.genre-chip').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  });
+
+  /* ════ TOAST ════ */
+  function showToast(msg) {
+    document.getElementById('toast-msg').textContent = msg;
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>

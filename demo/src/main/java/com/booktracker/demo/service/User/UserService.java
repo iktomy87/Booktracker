@@ -21,4 +21,10 @@ public class UserService {
         userRepository.findAll().forEach(users::add);
         return users;
     }
+
+    public User findByIdentifier(String identifier) {
+        return userRepository.findByEmail(identifier)
+                .orElseGet(() -> userRepository.findByUsername(identifier)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con identificador: " + identifier)));
+    }
 }

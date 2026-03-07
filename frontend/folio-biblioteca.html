@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Folio — Mi Biblioteca</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:      #f0ebe0;
+    --warm-white: #faf7f2;
+    --sand:       #e2d8c4;
+    --tan:        #c9b99a;
+    --dark:       #2a1f14;
+    --red:        #8c2030;
+    --red-light:  #b8394d;
+    --green:      #4a7c3f;
+    --green-bg:   #edf3e8;
+    --amber:      #b06820;
+    --amber-bg:   #fdf0e0;
+    --text:       #3d2e1e;
+    --text-muted: #8a7560;
+    --sidebar-w:  80px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ══ SIDEBAR ══ */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--cream);
+    border-right: 1px solid var(--sand);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0;
+    position: fixed;
+    top:0; left:0; bottom:0;
+    z-index: 50;
+  }
+
+  .sidebar-logo { margin-bottom: 2.2rem; }
+  .sidebar-logo svg { width:34px; height:34px; }
+
+  .nav-icon {
+    width:46px; height:46px;
+    border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--text-muted);
+    transition: background 0.2s, color 0.2s;
+    margin-bottom:4px;
+  }
+  .nav-icon:hover { background:var(--sand); color:var(--text); }
+  .nav-icon.active { background:var(--dark); color:var(--warm-white); }
+  .sidebar-spacer { flex:1; }
+
+  /* ══ MAIN ══ */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+
+  /* ══ TOPBAR ══ */
+  .topbar {
+    height:64px;
+    border-bottom:1px solid var(--sand);
+    display:flex; align-items:center;
+    padding:0 2.5rem; gap:1rem;
+    position:sticky; top:0;
+    background:rgba(240,235,224,0.92);
+    backdrop-filter:blur(14px);
+    z-index:40;
+  }
+
+  .search-wrap { flex:1; max-width:480px; position:relative; }
+  .search-wrap svg { position:absolute; left:.9rem; top:50%; transform:translateY(-50%); color:var(--text-muted); width:15px; height:15px; }
+  .search-wrap input {
+    width:100%; padding:.5rem 1rem .5rem 2.3rem;
+    background:var(--warm-white); border:1px solid var(--sand);
+    border-radius:100px; font-family:'DM Sans',sans-serif;
+    font-size:.84rem; color:var(--text); outline:none;
+    transition:border-color .2s;
+  }
+  .search-wrap input:focus { border-color:var(--tan); }
+  .search-wrap input::placeholder { color:var(--text-muted); }
+
+  .topbar-right { margin-left:auto; display:flex; align-items:center; gap:1.2rem; }
+  .notif-btn { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted); transition:background .2s; position:relative; }
+  .notif-btn:hover { background:var(--sand); }
+  .notif-dot { position:absolute; top:7px; right:7px; width:7px; height:7px; background:var(--red); border-radius:50%; border:1.5px solid var(--cream); }
+  .user-pill { display:flex; align-items:center; gap:.6rem; cursor:pointer; }
+  .user-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#c9b99a,#8a7560); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:.85rem; font-weight:600; color:var(--warm-white); }
+  .user-name { font-size:.85rem; font-weight:500; color:var(--text); }
+
+  /* ══ CONTENT ══ */
+  .content { padding:2.5rem 2.5rem 5rem; max-width:1260px; }
+
+  /* ── Page header ── */
+  .page-header {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:2rem;
+    animation: fadeUp .5s ease both;
+  }
+
+  .page-header h1 {
+    font-family:'Playfair Display',serif;
+    font-size:2.2rem; font-weight:500; color:var(--dark);
+    line-height:1.1; margin-bottom:.3rem;
+  }
+
+  .page-header p { font-size:.85rem; color:var(--text-muted); font-weight:300; }
+
+  .header-actions { display:flex; gap:.8rem; }
+
+  .btn-dark {
+    background:var(--dark); color:var(--warm-white);
+    padding:.6rem 1.4rem; border-radius:100px;
+    border:none; font-family:'DM Sans',sans-serif;
+    font-size:.84rem; font-weight:500; cursor:pointer;
+    transition:background .2s, transform .15s;
+    white-space:nowrap;
+  }
+  .btn-dark:hover { background:var(--red); transform:translateY(-1px); }
+
+  .btn-ghost-dark {
+    background:transparent; color:var(--text-muted);
+    padding:.6rem 1.2rem; border-radius:100px;
+    border:1px solid var(--sand); font-family:'DM Sans',sans-serif;
+    font-size:.84rem; cursor:pointer;
+    transition:all .2s;
+  }
+  .btn-ghost-dark:hover { border-color:var(--tan); color:var(--text); }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:1rem; margin-bottom:2.5rem;
+    animation: fadeUp .5s .05s ease both;
+  }
+
+  .stat-card {
+    background:var(--warm-white); border:1px solid var(--sand);
+    border-radius:16px; padding:1.2rem 1.4rem;
+    display:flex; align-items:center; gap:1rem;
+  }
+
+  .stat-icon {
+    width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; flex-shrink:0;
+  }
+
+  .si-red    { background:#fce8ea; }
+  .si-green  { background:var(--green-bg); }
+  .si-amber  { background:var(--amber-bg); }
+  .si-dark   { background:#e8e0d4; }
+
+  .stat-info .num {
+    font-family:'Playfair Display',serif;
+    font-size:1.55rem; font-weight:600; color:var(--dark); line-height:1;
+  }
+  .stat-info .lbl { font-size:.72rem; color:var(--text-muted); margin-top:.2rem; text-transform:uppercase; letter-spacing:.06em; }
+
+  /* ── Year progress ring ── */
+  .year-card {
+    grid-column: span 1;
+    background:var(--dark); border-radius:16px; padding:1.2rem 1.4rem;
+    display:flex; align-items:center; gap:1rem;
+    position:relative; overflow:hidden;
+  }
+  .year-card::before {
+    content:'';position:absolute;width:120px;height:120px;
+    background:radial-gradient(circle,rgba(140,32,48,.4) 0%,transparent 70%);
+    right:-20px; top:-20px; pointer-events:none;
+  }
+  .ring-wrap { position:relative; width:48px; height:48px; flex-shrink:0; }
+  .ring-wrap svg { width:48px; height:48px; transform:rotate(-90deg); }
+  .ring-bg { fill:none; stroke:rgba(255,255,255,.12); stroke-width:4; }
+  .ring-fill { fill:none; stroke:#e8a0a8; stroke-width:4; stroke-linecap:round;
+    stroke-dasharray:125; stroke-dashoffset:75; transition:stroke-dashoffset 1s ease; }
+  .ring-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:.75rem; font-weight:600; color:var(--warm-white); }
+  .year-info .num { font-family:'Playfair Display',serif; font-size:1.55rem; font-weight:600; color:var(--warm-white); line-height:1; }
+  .year-info .lbl { font-size:.72rem; color:rgba(250,247,242,.55); margin-top:.2rem; text-transform:uppercase; letter-spacing:.06em; }
+
+  /* ── Tabs ── */
+  .tabs-row {
+    display:flex; align-items:center; gap:.3rem;
+    margin-bottom:1.8rem; border-bottom:1px solid var(--sand);
+    animation: fadeUp .5s .1s ease both;
+  }
+
+  .tab {
+    padding:.7rem 1.2rem; font-size:.85rem; font-weight:400;
+    color:var(--text-muted); cursor:pointer; border:none;
+    background:transparent; font-family:'DM Sans',sans-serif;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+    transition:color .2s, border-color .2s;
+    display:flex; align-items:center; gap:.5rem;
+    white-space:nowrap;
+  }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--dark); border-bottom-color:var(--dark); font-weight:500; }
+
+  .tab-count {
+    background:var(--sand); color:var(--text-muted);
+    font-size:.65rem; font-weight:600; padding:.1rem .45rem;
+    border-radius:100px; letter-spacing:.02em;
+  }
+  .tab.active .tab-count { background:var(--dark); color:var(--warm-white); }
+
+  .tabs-spacer { flex:1; }
+
+  .view-toggles { display:flex; gap:.3rem; }
+  .view-btn {
+    width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--text-muted);
+    background:transparent; border:1px solid transparent;
+    transition:all .2s;
+  }
+  .view-btn.active { background:var(--warm-white); border-color:var(--sand); color:var(--text); }
+  .view-btn:hover:not(.active) { background:var(--sand); }
+
+  .filter-btn {
+    display:flex; align-items:center; gap:.4rem;
+    padding:.4rem .9rem; border-radius:8px;
+    border:1px solid var(--sand); background:transparent;
+    font-family:'DM Sans',sans-serif; font-size:.78rem;
+    color:var(--text-muted); cursor:pointer;
+    transition:all .2s; margin-left:.5rem;
+  }
+  .filter-btn:hover { border-color:var(--tan); color:var(--text); }
+
+  /* ══ CURRENTLY READING ══ */
+  .section-label {
+    font-size:.7rem; text-transform:uppercase; letter-spacing:.12em;
+    color:var(--red); font-weight:600; margin-bottom:1rem;
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--sand); }
+
+  /* Big reading cards */
+  .reading-cards {
+    display:grid; grid-template-columns:repeat(2,1fr);
+    gap:1.2rem; margin-bottom:2.8rem;
+    animation: fadeUp .5s .15s ease both;
+  }
+
+  .reading-card {
+    background:var(--warm-white); border:1px solid var(--sand);
+    border-radius:20px; padding:1.6rem;
+    display:flex; gap:1.4rem;
+    cursor:pointer; transition:transform .25s, box-shadow .25s;
+    position:relative; overflow:hidden;
+  }
+  .reading-card:hover { transform:translateY(-3px); box-shadow:0 14px 36px rgba(42,31,20,.09); }
+
+  .rc-cover {
+    width:80px; height:112px; border-radius:8px;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:.55rem;
+    text-align:center; font-weight:700; letter-spacing:.05em;
+    line-height:1.5; padding:.5rem;
+    box-shadow:4px 4px 16px rgba(42,31,20,.2);
+  }
+
+  .rc-body { flex:1; min-width:0; display:flex; flex-direction:column; }
+  .rc-status { font-size:.65rem; text-transform:uppercase; letter-spacing:.1em; color:var(--amber); font-weight:600; margin-bottom:.35rem; }
+  .rc-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:500; color:var(--dark); margin-bottom:.15rem; line-height:1.25; }
+  .rc-author { font-size:.78rem; color:var(--red); margin-bottom:auto; padding-bottom:.8rem; }
+
+  .rc-progress-section { margin-top:auto; }
+  .rc-progress-meta { display:flex; justify-content:space-between; font-size:.72rem; color:var(--text-muted); margin-bottom:.35rem; }
+  .rc-progress-meta strong { color:var(--dark); font-weight:500; }
+
+  .prog-bar { height:5px; background:var(--sand); border-radius:3px; overflow:hidden; }
+  .prog-fill {
+    height:100%; border-radius:3px;
+    background:linear-gradient(90deg,var(--red),var(--red-light));
+    animation:fillBar 1.2s ease both;
+    transform-origin:left;
+  }
+
+  .rc-footer { display:flex; align-items:center; justify-content:space-between; margin-top:.9rem; }
+  .rc-streak { font-size:.72rem; color:var(--text-muted); display:flex; align-items:center; gap:.3rem; }
+  .rc-last-read { font-size:.7rem; color:var(--text-muted); }
+
+  .rc-update-btn {
+    padding:.35rem .9rem; border-radius:100px;
+    border:1px solid var(--sand); background:transparent;
+    font-family:'DM Sans',sans-serif; font-size:.72rem;
+    color:var(--text-muted); cursor:pointer;
+    transition:all .2s;
+  }
+  .rc-update-btn:hover { background:var(--dark); color:var(--warm-white); border-color:var(--dark); }
+
+  /* Spine accent */
+  .reading-card::before {
+    content:''; position:absolute;
+    left:0; top:0; bottom:0; width:4px;
+    border-radius:20px 0 0 20px;
+    background:linear-gradient(to bottom,var(--red),var(--red-light));
+  }
+
+  /* ══ FINISHED BOOKS ══ */
+  .finished-grid {
+    display:grid; grid-template-columns:repeat(5,1fr);
+    gap:1.4rem; margin-bottom:2.8rem;
+    animation: fadeUp .5s .2s ease both;
+  }
+
+  .finished-card {
+    cursor:pointer;
+    transition:transform .25s;
+  }
+  .finished-card:hover { transform:translateY(-4px); }
+
+  .fc-cover-wrap { position:relative; margin-bottom:.75rem; }
+
+  .fc-cover {
+    width:100%; aspect-ratio:2/3;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:.55rem;
+    text-align:center; font-weight:700; letter-spacing:.05em;
+    line-height:1.5; padding:.7rem;
+    box-shadow:3px 6px 18px rgba(42,31,20,.18);
+    transition:box-shadow .25s;
+  }
+  .finished-card:hover .fc-cover { box-shadow:6px 12px 28px rgba(42,31,20,.25); }
+
+  .fc-badge {
+    position:absolute; top:.5rem; right:.5rem;
+    background:var(--green); color:white;
+    width:24px; height:24px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.65rem; font-weight:700;
+    box-shadow:0 2px 8px rgba(74,124,63,.4);
+  }
+
+  .fc-rating {
+    position:absolute; bottom:.5rem; left:.5rem;
+    background:rgba(42,31,20,.75); color:var(--warm-white);
+    backdrop-filter:blur(6px); border-radius:6px;
+    padding:.2rem .5rem; font-size:.65rem;
+    display:flex; align-items:center; gap:.2rem;
+  }
+  .star-gold { color:#f0c040; }
+
+  .fc-title { font-size:.82rem; font-weight:500; color:var(--dark); line-height:1.3; margin-bottom:.15rem; }
+  .fc-author { font-size:.74rem; color:var(--red); margin-bottom:.3rem; }
+  .fc-date { font-size:.68rem; color:var(--text-muted); }
+
+  /* ══ WANT TO READ ══ */
+  .wishlist-list {
+    display:flex; flex-direction:column; gap:.8rem;
+    margin-bottom:2.8rem;
+    animation: fadeUp .5s .25s ease both;
+  }
+
+  .wl-item {
+    background:var(--warm-white); border:1px solid var(--sand);
+    border-radius:14px; padding:1rem 1.2rem;
+    display:flex; align-items:center; gap:1rem;
+    cursor:pointer; transition:transform .2s, box-shadow .2s;
+  }
+  .wl-item:hover { transform:translateX(4px); box-shadow:0 4px 16px rgba(42,31,20,.07); }
+
+  .wl-cover {
+    width:44px; height:62px; border-radius:5px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:.45rem;
+    text-align:center; font-weight:700; letter-spacing:.04em;
+    line-height:1.4; padding:.3rem;
+    box-shadow:2px 3px 10px rgba(42,31,20,.15);
+  }
+
+  .wl-info { flex:1; min-width:0; }
+  .wl-title { font-family:'Playfair Display',serif; font-size:.9rem; font-weight:500; color:var(--dark); margin-bottom:.15rem; }
+  .wl-author { font-size:.75rem; color:var(--red); margin-bottom:.3rem; }
+  .wl-tags { display:flex; gap:.4rem; flex-wrap:wrap; }
+  .wl-tag { padding:.15rem .55rem; border-radius:100px; border:1px solid var(--sand); font-size:.65rem; color:var(--text-muted); }
+
+  .wl-meta { text-align:right; flex-shrink:0; }
+  .wl-added { font-size:.7rem; color:var(--text-muted); margin-bottom:.5rem; }
+  .wl-start-btn {
+    padding:.35rem .9rem; border-radius:100px;
+    background:var(--dark); color:var(--warm-white);
+    border:none; font-family:'DM Sans',sans-serif;
+    font-size:.72rem; font-weight:500; cursor:pointer;
+    transition:background .2s;
+    white-space:nowrap;
+  }
+  .wl-start-btn:hover { background:var(--red); }
+
+  .wl-rank { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:400; color:var(--sand); flex-shrink:0; width:32px; text-align:center; }
+
+  /* ══ READING YEAR TIMELINE ══ */
+  .timeline-section {
+    background:var(--warm-white); border:1px solid var(--sand);
+    border-radius:20px; padding:1.8rem 2rem; margin-bottom:2.8rem;
+    animation: fadeUp .5s .3s ease both;
+  }
+
+  .timeline-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.6rem; }
+  .tl-title { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:500; color:var(--dark); }
+  .tl-subtitle { font-size:.75rem; color:var(--text-muted); margin-top:.2rem; }
+  .tl-year-select { font-size:.8rem; color:var(--text-muted); display:flex; align-items:center; gap:.4rem; cursor:pointer; }
+
+  .months-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:.5rem; }
+  .month-col { display:flex; flex-direction:column; align-items:center; gap:.3rem; }
+  .month-bar-wrap { flex:1; display:flex; flex-direction:column-reverse; height:80px; }
+  .month-bar {
+    width:100%; border-radius:4px 4px 0 0;
+    background:linear-gradient(to top,var(--red),var(--red-light));
+    min-height:4px; transition:height .6s ease;
+    position:relative;
+  }
+  .month-bar:hover::after {
+    content:attr(data-tip);
+    position:absolute; bottom:110%; left:50%; transform:translateX(-50%);
+    background:var(--dark); color:var(--warm-white);
+    font-size:.65rem; padding:.25rem .5rem; border-radius:5px;
+    white-space:nowrap; pointer-events:none;
+  }
+  .month-bar.future { background:var(--sand); }
+  .month-name { font-size:.6rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:.2rem; }
+  .month-count { font-size:.65rem; color:var(--text-muted); font-weight:500; }
+
+  /* ══ COVER COLORS ══ */
+  .cv1  { background:linear-gradient(155deg,#1a2f0e,#3a5a20); color:#a8c87a; }
+  .cv2  { background:linear-gradient(155deg,#0d1a2e,#1e3a5a); color:#7ab0d0; }
+  .cv3  { background:linear-gradient(155deg,#2e0d0d,#6a1e20); color:#f0b0b0; }
+  .cv4  { background:linear-gradient(155deg,#2e2010,#6a4010); color:#f0d0a0; }
+  .cv5  { background:linear-gradient(155deg,#1a1a35,#352a6a); color:#c0b0f0; }
+  .cv6  { background:linear-gradient(155deg,#0a2020,#1a4a40); color:#80d0c0; }
+  .cv7  { background:linear-gradient(155deg,#2a1408,#6a3010); color:#f0c090; }
+  .cv8  { background:linear-gradient(155deg,#200a20,#4a1a50); color:#e0a0e0; }
+  .cv9  { background:linear-gradient(155deg,#0a1a0a,#203820); color:#90d090; }
+  .cv10 { background:linear-gradient(155deg,#1e1408,#403018); color:#d4b880; }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fillBar {
+    from { transform:scaleX(0); }
+    to   { transform:scaleX(1); }
+  }
+
+  /* ══ HIDDEN SECTIONS (tab switching) ══ */
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="14" r="8" stroke="#2a1f14" stroke-width="2.2" fill="none"/>
+      <circle cx="24" cy="14" r="8" stroke="#2a1f14" stroke-width="2.2" fill="none"/>
+      <line x1="7" y1="30" x2="29" y2="30" stroke="#2a1f14" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="18" cy="30" r="1.8" fill="#2a1f14"/>
+    </svg>
+  </div>
+  <div class="nav-icon" title="Inicio">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+  </div>
+  <div class="nav-icon active" title="Mi biblioteca">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+  </div>
+  <div class="nav-icon" title="Explorar">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </div>
+  <div class="nav-icon" title="Estadísticas">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="nav-icon" title="Configuración">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Buscar en mi biblioteca…">
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="user-pill">
+        <div class="user-avatar">M</div>
+        <span class="user-name">Michelle</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1>Mi Biblioteca</h1>
+        <p>Tu colección personal · 34 libros en total</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-ghost-dark">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Importar
+        </button>
+        <button class="btn-dark">+ Añadir libro</button>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon si-amber">📖</div>
+        <div class="stat-info">
+          <div class="num">3</div>
+          <div class="lbl">Leyendo ahora</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-green">✅</div>
+        <div class="stat-info">
+          <div class="num">24</div>
+          <div class="lbl">Terminados</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-dark">📚</div>
+        <div class="stat-info">
+          <div class="num">7</div>
+          <div class="lbl">Por leer</div>
+        </div>
+      </div>
+      <div class="year-card">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 48 48">
+            <circle class="ring-bg" cx="24" cy="24" r="20"/>
+            <circle class="ring-fill" cx="24" cy="24" r="20"/>
+          </svg>
+          <div class="ring-label">48%</div>
+        </div>
+        <div class="year-info">
+          <div class="num">12 <span style="font-size:.9rem;opacity:.6">/ 25</span></div>
+          <div class="lbl">Meta 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-row" id="tabs">
+      <button class="tab active" data-tab="reading">
+        Leyendo <span class="tab-count">3</span>
+      </button>
+      <button class="tab" data-tab="finished">
+        Terminados <span class="tab-count">24</span>
+      </button>
+      <button class="tab" data-tab="wishlist">
+        Por leer <span class="tab-count">7</span>
+      </button>
+      <button class="tab" data-tab="timeline">
+        Historial anual
+      </button>
+      <div class="tabs-spacer"></div>
+      <div class="view-toggles">
+        <div class="view-btn active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="view-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+      </div>
+      <button class="filter-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filtrar
+      </button>
+    </div>
+
+    <!-- ══ TAB: LEYENDO ══ -->
+    <div class="tab-panel active" id="tab-reading">
+      <div class="section-label">En progreso</div>
+
+      <div class="reading-cards">
+
+        <!-- Card 1 -->
+        <div class="reading-card">
+          <div class="rc-cover cv1">CIEN AÑOS<br>DE<br>SOLEDAD</div>
+          <div class="rc-body">
+            <div class="rc-status">📖 Leyendo</div>
+            <div class="rc-title">Cien Años de Soledad</div>
+            <div class="rc-author">Gabriel García Márquez</div>
+            <div class="rc-progress-section">
+              <div class="rc-progress-meta">
+                <span>Página <strong>120</strong> de 471</span>
+                <strong>25%</strong>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:25%"></div>
+              </div>
+            </div>
+            <div class="rc-footer">
+              <span class="rc-streak">🔥 18 días seguidos</span>
+              <button class="rc-update-btn">Actualizar página</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="reading-card">
+          <div class="rc-cover cv5">EL SEÑOR<br>DE LOS<br>ANILLOS</div>
+          <div class="rc-body">
+            <div class="rc-status">📖 Leyendo</div>
+            <div class="rc-title">El Señor de los Anillos</div>
+            <div class="rc-author">J.R.R. Tolkien</div>
+            <div class="rc-progress-section">
+              <div class="rc-progress-meta">
+                <span>Página <strong>347</strong> de 1216</span>
+                <strong>28%</strong>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:28%"></div>
+              </div>
+            </div>
+            <div class="rc-footer">
+              <span class="rc-streak">🔥 5 días seguidos</span>
+              <button class="rc-update-btn">Actualizar página</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 – paused -->
+        <div class="reading-card" style="opacity:.75">
+          <div class="rc-cover cv3">ASESINATO<br>EN EL<br>ORIENT<br>EXPRESS</div>
+          <div class="rc-body">
+            <div class="rc-status" style="color:var(--text-muted)">⏸ En pausa</div>
+            <div class="rc-title">Asesinato en el Orient Express</div>
+            <div class="rc-author">Agatha Christie</div>
+            <div class="rc-progress-section">
+              <div class="rc-progress-meta">
+                <span>Página <strong>88</strong> de 256</span>
+                <strong>34%</strong>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:34%; background:linear-gradient(90deg,var(--text-muted),var(--tan));"></div>
+              </div>
+            </div>
+            <div class="rc-footer">
+              <span class="rc-last-read">Última lectura hace 12 días</span>
+              <button class="rc-update-btn">Reanudar</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ TAB: TERMINADOS ══ -->
+    <div class="tab-panel" id="tab-finished">
+      <div class="section-label">Completados este año · 12 libros</div>
+
+      <div class="finished-grid">
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv2">THE GREAT<br>GATSBY</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">The Great Gatsby</div>
+          <div class="fc-author">F. Scott Fitzgerald</div>
+          <div class="fc-date">Terminado ene. 2026</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv4">CRIMEN Y<br>CASTIGO</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.5</div>
+          </div>
+          <div class="fc-title">Crimen y Castigo</div>
+          <div class="fc-author">Fiódor Dostoievski</div>
+          <div class="fc-date">Terminado dic. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv6">PEDRO<br>PÁRAMO</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.0</div>
+          </div>
+          <div class="fc-title">Pedro Páramo</div>
+          <div class="fc-author">Juan Rulfo</div>
+          <div class="fc-date">Terminado nov. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv8">JANE<br>EYRE</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">Jane Eyre</div>
+          <div class="fc-author">Charlotte Brontë</div>
+          <div class="fc-date">Terminado oct. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv7">ESTUDIO<br>EN<br>ESCARLATA</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.5</div>
+          </div>
+          <div class="fc-title">Estudio en Escarlata</div>
+          <div class="fc-author">Arthur Conan Doyle</div>
+          <div class="fc-date">Terminado sep. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv9">1984</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">1984</div>
+          <div class="fc-author">George Orwell</div>
+          <div class="fc-date">Terminado ago. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv10">DON<br>QUIJOTE</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.0</div>
+          </div>
+          <div class="fc-title">Don Quijote</div>
+          <div class="fc-author">Cervantes</div>
+          <div class="fc-date">Terminado jul. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv1">LOS<br>MISERABLES</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.5</div>
+          </div>
+          <div class="fc-title">Los Miserables</div>
+          <div class="fc-author">Victor Hugo</div>
+          <div class="fc-date">Terminado jun. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv5">BRAVE NEW<br>WORLD</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.0</div>
+          </div>
+          <div class="fc-title">Brave New World</div>
+          <div class="fc-author">Aldous Huxley</div>
+          <div class="fc-date">Terminado may. 2025</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv3">LA CASA<br>DE LOS<br>ESPÍRITUS</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">La Casa de los Espíritus</div>
+          <div class="fc-author">Isabel Allende</div>
+          <div class="fc-date">Terminado abr. 2025</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: POR LEER ══ -->
+    <div class="tab-panel" id="tab-wishlist">
+      <div class="section-label">Lista de deseos · 7 títulos</div>
+
+      <div class="wishlist-list">
+        <div class="wl-item">
+          <div class="wl-rank">01</div>
+          <div class="wl-cover cv6">ULISES</div>
+          <div class="wl-info">
+            <div class="wl-title">Ulises</div>
+            <div class="wl-author">James Joyce</div>
+            <div class="wl-tags"><span class="wl-tag">Clásico</span><span class="wl-tag">Modernismo</span><span class="wl-tag">Irlandés</span></div>
+          </div>
+          <div class="wl-meta">
+            <div class="wl-added">Añadido hace 3 días</div>
+            <button class="wl-start-btn">Empezar a leer →</button>
+          </div>
+        </div>
+        <div class="wl-item">
+          <div class="wl-rank">02</div>
+          <div class="wl-cover cv8">EN BUSCA<br>DEL TIEMPO<br>PERDIDO</div>
+          <div class="wl-info">
+            <div class="wl-title">En Busca del Tiempo Perdido</div>
+            <div class="wl-author">Marcel Proust</div>
+            <div class="wl-tags"><span class="wl-tag">Clásico</span><span class="wl-tag">Francés</span><span class="wl-tag">Extenso</span></div>
+          </div>
+          <div class="wl-meta">
+            <div class="wl-added">Añadido hace 1 semana</div>
+            <button class="wl-start-btn">Empezar a leer →</button>
+          </div>
+        </div>
+        <div class="wl-item">
+          <div class="wl-rank">03</div>
+          <div class="wl-cover cv2">EL NOMBRE<br>DE LA ROSA</div>
+          <div class="wl-info">
+            <div class="wl-title">El Nombre de la Rosa</div>
+            <div class="wl-author">Umberto Eco</div>
+            <div class="wl-tags"><span class="wl-tag">Histórico</span><span class="wl-tag">Misterio</span></div>
+          </div>
+          <div class="wl-meta">
+            <div class="wl-added">Añadido hace 2 semanas</div>
+            <button class="wl-start-btn">Empezar a leer →</button>
+          </div>
+        </div>
+        <div class="wl-item">
+          <div class="wl-rank">04</div>
+          <div class="wl-cover cv4">FICCIONES</div>
+          <div class="wl-info">
+            <div class="wl-title">Ficciones</div>
+            <div class="wl-author">Jorge Luis Borges</div>
+            <div class="wl-tags"><span class="wl-tag">Cuentos</span><span class="wl-tag">Fantástico</span><span class="wl-tag">Latinoam.</span></div>
+          </div>
+          <div class="wl-meta">
+            <div class="wl-added">Añadido hace 1 mes</div>
+            <button class="wl-start-btn">Empezar a leer →</button>
+          </div>
+        </div>
+        <div class="wl-item">
+          <div class="wl-rank">05</div>
+          <div class="wl-cover cv10">GUERRA Y<br>PAZ</div>
+          <div class="wl-info">
+            <div class="wl-title">Guerra y Paz</div>
+            <div class="wl-author">León Tolstói</div>
+            <div class="wl-tags"><span class="wl-tag">Clásico</span><span class="wl-tag">Ruso</span><span class="wl-tag">Épico</span></div>
+          </div>
+          <div class="wl-meta">
+            <div class="wl-added">Añadido hace 2 meses</div>
+            <button class="wl-start-btn">Empezar a leer →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: HISTORIAL ANUAL ══ -->
+    <div class="tab-panel" id="tab-timeline">
+      <div class="timeline-section">
+        <div class="timeline-header">
+          <div>
+            <div class="tl-title">Libros leídos por mes</div>
+            <div class="tl-subtitle">12 libros completados en 2026 · mejor racha: 3 en mayo</div>
+          </div>
+          <div class="tl-year-select">2026 ▾</div>
+        </div>
+        <div class="months-grid">
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:40px" data-tip="Ene · 2 libros"></div></div>
+            <div class="month-name">Ene</div>
+            <div class="month-count">2</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:20px" data-tip="Feb · 1 libro"></div></div>
+            <div class="month-name">Feb</div>
+            <div class="month-count">1</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:40px" data-tip="Mar · 2 libros"></div></div>
+            <div class="month-name">Mar</div>
+            <div class="month-count">2</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:20px" data-tip="Abr · 1 libro"></div></div>
+            <div class="month-name">Abr</div>
+            <div class="month-count">1</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:60px" data-tip="May · 3 libros"></div></div>
+            <div class="month-name">May</div>
+            <div class="month-count">3</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:40px" data-tip="Jun · 2 libros"></div></div>
+            <div class="month-name">Jun</div>
+            <div class="month-count">2</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar" style="height:20px" data-tip="Jul · 1 libro"></div></div>
+            <div class="month-name">Jul</div>
+            <div class="month-count">1</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar future" style="height:4px" data-tip="Ago · en curso"></div></div>
+            <div class="month-name" style="color:var(--sand)">Ago</div>
+            <div class="month-count" style="color:var(--sand)">—</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar future" style="height:4px"></div></div>
+            <div class="month-name" style="color:var(--sand)">Sep</div>
+            <div class="month-count" style="color:var(--sand)">—</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar future" style="height:4px"></div></div>
+            <div class="month-name" style="color:var(--sand)">Oct</div>
+            <div class="month-count" style="color:var(--sand)">—</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar future" style="height:4px"></div></div>
+            <div class="month-name" style="color:var(--sand)">Nov</div>
+            <div class="month-count" style="color:var(--sand)">—</div>
+          </div>
+          <div class="month-col">
+            <div class="month-bar-wrap"><div class="month-bar future" style="height:4px"></div></div>
+            <div class="month-name" style="color:var(--sand)">Dic</div>
+            <div class="month-count" style="color:var(--sand)">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finished grid in timeline view -->
+      <div class="section-label">Todos los terminados · 2026</div>
+      <div class="finished-grid">
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv2">THE GREAT<br>GATSBY</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">The Great Gatsby</div>
+          <div class="fc-author">F. Scott Fitzgerald</div>
+          <div class="fc-date">Ene 2026</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv1">CIEN AÑOS<br>DE SOLEDAD</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">Cien Años de Soledad</div>
+          <div class="fc-author">García Márquez</div>
+          <div class="fc-date">Ene 2026</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv6">PEDRO<br>PÁRAMO</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.5</div>
+          </div>
+          <div class="fc-title">Pedro Páramo</div>
+          <div class="fc-author">Juan Rulfo</div>
+          <div class="fc-date">Feb 2026</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv4">CRIMEN Y<br>CASTIGO</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 4.0</div>
+          </div>
+          <div class="fc-title">Crimen y Castigo</div>
+          <div class="fc-author">Dostoievski</div>
+          <div class="fc-date">Mar 2026</div>
+        </div>
+        <div class="finished-card">
+          <div class="fc-cover-wrap">
+            <div class="fc-cover cv9">1984</div>
+            <div class="fc-badge">✓</div>
+            <div class="fc-rating"><span class="star-gold">★</span> 5.0</div>
+          </div>
+          <div class="fc-title">1984</div>
+          <div class="fc-author">George Orwell</div>
+          <div class="fc-date">Mar 2026</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const panelId = 'tab-' + tab.dataset.tab;
+      const panel = document.getElementById(panelId);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // View toggle
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Update page button modal-like feedback
+  document.querySelectorAll('.rc-update-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const original = btn.textContent;
+      btn.textContent = '✓ Guardado';
+      btn.style.background = 'var(--green)';
+      btn.style.color = 'white';
+      btn.style.borderColor = 'var(--green)';
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 1800);
+    });
+  });
+</script>
+</body>
+</html>
