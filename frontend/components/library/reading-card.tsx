@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ReadingCardProps {
+  id: number;
   title: string;
   author: string;
   currentPage: number;
@@ -10,9 +11,11 @@ interface ReadingCardProps {
   lastRead?: string;
   isPaused?: boolean;
   coverVariant: string;
+  onUpdateProgress?: (id: number) => void;
 }
 
 export const ReadingCard = ({
+  id,
   title,
   author,
   currentPage,
@@ -21,10 +24,11 @@ export const ReadingCard = ({
   lastRead,
   isPaused = false,
   coverVariant,
+  onUpdateProgress,
 }: ReadingCardProps) => {
-  const progress = Math.round((currentPage / totalPages) * 100);
+  const progress = Math.round((currentPage / (totalPages || 1)) * 100);
   
-  // Mapping variant classes (simulated based on HTML cv1, cv2, etc.)
+  // ... (getCoverStyles remains same)
   const getCoverStyles = (variant: string) => {
     const variants: Record<string, string> = {
       cv1: 'bg-gradient-to-br from-[#1a2f0e] to-[#3a5a20] text-[#a8c87a]',
@@ -41,7 +45,7 @@ export const ReadingCard = ({
       "group relative overflow-hidden rounded-[20px] border border-landing-sand bg-landing-warm-white p-[26px] transition-all hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(42,31,20,0.09)]",
       isPaused && "opacity-75"
     )}>
-      {/* Spine accent */}
+      {/* ... (rest of the card remains same) */}
       <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-[20px] bg-gradient-to-b from-landing-red to-landing-red-light" />
 
       <div className="flex gap-6">
@@ -69,7 +73,7 @@ export const ReadingCard = ({
 
           <div className="mt-auto">
             <div className="mb-1.5 flex justify-between text-[11.5px] text-landing-text-muted">
-              <span>Página <strong className="font-medium text-landing-dark">{currentPage}</strong> de {totalPages}</span>
+              <span>Página <strong className="font-medium text-landing-dark">{currentPage}</strong> de {totalPages || '—'}</span>
               <strong className="font-medium text-landing-dark">{progress}%</strong>
             </div>
             <div className="h-[5px] w-full rounded-[3px] bg-landing-sand overflow-hidden">
@@ -96,7 +100,10 @@ export const ReadingCard = ({
                 {lastRead}
               </span>
             )}
-            <button className="rounded-full border border-landing-sand bg-transparent px-3.5 py-1.5 font-dm-sans text-[11.5px] text-landing-text-muted transition-all hover:bg-landing-dark hover:text-landing-warm-white hover:border-landing-dark">
+            <button 
+              onClick={() => onUpdateProgress?.(id)}
+              className="rounded-full border border-landing-sand bg-transparent px-3.5 py-1.5 font-dm-sans text-[11.5px] text-landing-text-muted transition-all hover:bg-landing-dark hover:text-landing-warm-white hover:border-landing-dark"
+            >
               {isPaused ? "Reanudar" : "Actualizar página"}
             </button>
           </div>

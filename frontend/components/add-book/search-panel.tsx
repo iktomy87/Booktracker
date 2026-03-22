@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ArrowRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookCover } from './book-cover';
+import { searchBooks } from '@/lib/api';
 
 export interface Book {
   id: number;
@@ -15,17 +16,6 @@ export interface Book {
   reviews: string;
   tags: string[];
 }
-
-const MOCK_BOOKS: Book[] = [
-  { id: 1, title: 'Cien Años de Soledad', author: 'Gabriel García Márquez', year: '1967', pages: 471, genre: 'Realismo mágico', cv: 'cv1', rating: 4.9, reviews: '12k', tags: ['Latinoam.', 'Premio Nobel'] },
-  { id: 2, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', year: '1925', pages: 180, genre: 'Ficción americana', cv: 'cv2', rating: 4.7, reviews: '9.2k', tags: ['Clásico', 'Jazz Age'] },
-  { id: 3, title: 'Asesinato en el Orient Express', author: 'Agatha Christie', year: '1934', pages: 256, genre: 'Misterio', cv: 'cv3', rating: 4.8, reviews: '8k', tags: ['Poirot', 'Thriller'] },
-  { id: 4, title: 'El Señor de los Anillos', author: 'J.R.R. Tolkien', year: '1954', pages: 1216, genre: 'Fantasía épica', cv: 'cv5', rating: 4.9, reviews: '18k', tags: ['Fantasía', 'Épico'] },
-  { id: 5, title: '1984', author: 'George Orwell', year: '1949', pages: 328, genre: 'Distopía', cv: 'cv4', rating: 4.8, reviews: '15k', tags: ['Distopía', 'Política'] },
-  { id: 6, title: 'Pedro Páramo', author: 'Juan Rulfo', year: '1955', pages: 124, genre: 'Realismo mágico', cv: 'cv6', rating: 4.6, reviews: '5k', tags: ['Mexicano', 'Clásico'] },
-  { id: 7, title: 'Crimen y Castigo', author: 'Fiódor Dostoievski', year: '1866', pages: 545, genre: 'Novela psicológica', cv: 'cv7', rating: 4.7, reviews: '10k', tags: ['Ruso', 'Psicológico'] },
-  { id: 8, title: 'La Casa de los Espíritus', author: 'Isabel Allende', year: '1982', pages: 433, genre: 'Realismo mágico', cv: 'cv8', rating: 4.7, reviews: '7.5k', tags: ['Chileno', 'Saga'] },
-];
 
 interface SearchPanelProps {
   onSelectBook: (book: Book) => void;
@@ -45,13 +35,18 @@ export const SearchPanel = ({ onSelectBook, onGoToManual, selectedBook }: Search
     }
 
     setIsLoading(true);
-    const timer = setTimeout(() => {
-      const matches = MOCK_BOOKS.filter(b => 
-        b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setResults(matches);
-      setIsLoading(false);
+    const timer = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const matches = await searchBooks(searchQuery, token);
+          setResults(matches);
+        }
+      } catch (error) {
+        console.error("Error searching books:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }, 500);
 
     return () => clearTimeout(timer);

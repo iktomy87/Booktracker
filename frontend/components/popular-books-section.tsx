@@ -65,7 +65,8 @@ export function PopularBooksSection({ books }: PopularBooksSectionProps) {
             key={book.id}
             title={book.name} 
             author={book.authorName || "Desconocido"} 
-            coverUrl={book.coverUrl || "/placeholder.png"} 
+            // CAMBIO: Enviamos undefined si no hay imagen, permitiendo que actúe BookCover
+            coverUrl={book.coverUrl || undefined} 
             rating={4.5} 
           />
         ))}

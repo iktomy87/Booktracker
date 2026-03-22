@@ -10,12 +10,14 @@ import { SearchPanel, Book } from '@/components/add-book/search-panel';
 import { CreateManualPanel } from '@/components/add-book/create-manual-panel';
 import { StatusPanel, BookStatus } from '@/components/add-book/status-panel';
 import { SuccessPanel } from '@/components/add-book/success-panel';
+import { addUserBook, createAndAddBook } from '@/lib/api';
 
 export default function AddBookPage() {
   const [step, setStep] = useState<Step>(1);
   const [isManual, setIsManual] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<BookStatus | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSelectBook = (book: Book) => {
     setSelectedBook(book);
@@ -23,15 +25,49 @@ export default function AddBookPage() {
     setStep(2);
   };
 
-  const handleManualSubmit = (book: Book) => {
-    setSelectedBook(book);
-    setIsManual(true);
-    setStep(2);
+  const handleManualSubmit = async (book: Book) => {
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Create book globally first
+        const newBook = await createAndAddBook(book, token);
+        setSelectedBook(newBook);
+        setIsManual(true);
+        setStep(2);
+      }
+    } catch (error) {
+      console.error("Error creating manual book:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleFinish = (status: BookStatus) => {
-    setSelectedStatus(status);
-    setStep(3);
+  const handleFinish = async (status: BookStatus, details: any) => {
+    if (!selectedBook) return;
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const payload = {
+          bookId: selectedBook.id,
+          status: status,
+          currentPage: details.currentPage || 0,
+          startDate: details.startDate,
+          endDate: details.endDate,
+          rating: details.rating,
+          tags: details.tags,
+          notes: details.notes
+        };
+        await addUserBook(payload, token);
+        setSelectedStatus(status);
+        setStep(3);
+      }
+    } catch (error) {
+      console.error("Error adding book to library:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBackToStep1 = () => {

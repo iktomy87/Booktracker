@@ -76,6 +76,12 @@ public class BookController {
         }
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<BookDto>> searchBooks(@RequestParam("q") String query) {
+        List<BookDto> books = bookService.searchBooks(query);
+        return ResponseEntity.ok(books);
+    }
+
 
 }
 

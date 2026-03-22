@@ -42,7 +42,7 @@ export const BookCover = ({ title, variant, size = 'md', className }: BookCoverP
       CV_CLASSES[variant] || CV_CLASSES.cv1,
       className
     )}>
-      {title.split(' ').slice(0, 4).join('')}
+      {(title || '').split(' ').slice(0, 4).join(' ')}
     </div>
   );
 };

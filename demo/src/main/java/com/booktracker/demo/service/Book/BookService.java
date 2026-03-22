@@ -9,4 +9,5 @@ public interface BookService {
     BookDto createBook(BookCreateDto bookCreateDto);
     List<BookDto> getAllBooks();
     BookDto getBookById(Long id);
+    List<BookDto> searchBooks(String query);
 }

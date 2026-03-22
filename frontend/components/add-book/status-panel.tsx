@@ -17,6 +17,12 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
   const [rating, setRating] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  
+  // New input states
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [notes, setNotes] = useState('');
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if ((e.key === 'Enter' || e.key === ',') && tagInput.trim()) {
@@ -35,12 +41,19 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
 
   const handleComplete = () => {
     if (!status) return;
-    onFinish(status, { rating, tags });
+    onFinish(status, { 
+      rating, 
+      tags,
+      currentPage,
+      startDate,
+      endDate,
+      notes
+    });
   };
 
   return (
     <div className="animate-fade-up">
-      {/* Selected book preview */}
+      {/* ... (Selected book preview remains same) */}
       <div className="relative mb-7 flex items-start gap-6 overflow-hidden rounded-[20px] bg-landing-dark p-8 text-landing-warm-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(140,32,48,0.3)_0%,transparent_60%)] pointer-events-none" />
         <BookCover title={selectedBook.title} variant={selectedBook.cv} size="lg" className="relative z-10" />
@@ -62,7 +75,7 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
         </button>
       </div>
 
-      {/* Status selector */}
+      {/* ... (Status selector remains same) */}
       <div className="mb-7 flex flex-col gap-3.5">
         <div className="text-[11.5px] font-semibold tracking-widest text-landing-text-muted uppercase">¿En qué estado está este libro para ti?</div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -93,11 +106,22 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
           <div className="grid grid-cols-2 gap-3.5">
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-medium text-landing-text-muted">Página actual</label>
-              <input type="number" placeholder="Ej: 120" className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" />
+              <input 
+                type="number" 
+                placeholder="Ej: 120" 
+                value={currentPage}
+                onChange={(e) => setCurrentPage(parseInt(e.target.value) || 0)}
+                className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" 
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-medium text-landing-text-muted">Fecha de inicio</label>
-              <input type="date" className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" />
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" 
+              />
             </div>
           </div>
         </div>
@@ -109,11 +133,21 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
           <div className="grid grid-cols-2 gap-3.5 mb-5">
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-medium text-landing-text-muted">Fecha de inicio</label>
-              <input type="date" className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" />
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" 
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-medium text-landing-text-muted">Fecha de fin</label>
-              <input type="date" className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" />
+              <input 
+                type="date" 
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="rounded-xl border border-landing-sand bg-landing-cream px-4 py-2.5 text-[14px] text-landing-dark outline-none focus:border-landing-red" 
+              />
             </div>
           </div>
           <div className="mb-5 flex flex-col gap-1.5">
@@ -156,8 +190,19 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
               className="flex-1 min-w-[120px] border-none bg-transparent text-[13px] text-landing-dark outline-none placeholder:text-landing-text-muted"
             />
           </div>
+          
+          <div className="mt-6">
+            <div className="mb-3 text-[11.5px] font-semibold tracking-widest text-landing-text-muted uppercase">Notas privadas (opcional)</div>
+            <textarea 
+              placeholder="Algo que quieras recordar sobre este libro…"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full rounded-xl border border-landing-sand bg-landing-cream px-4 py-3 text-[14px] text-landing-dark outline-none focus:border-landing-red min-h-[80px] resize-none"
+            />
+          </div>
         </div>
       )}
+
 
       <div className="sticky bottom-0 -mx-10 mt-10 flex items-center justify-between border-t border-landing-sand bg-landing-cream/95 px-10 py-4 backdrop-blur-md">
         <span className="text-[13px] text-landing-text-muted">

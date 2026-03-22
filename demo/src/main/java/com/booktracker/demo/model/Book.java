@@ -25,7 +25,6 @@ public class Book {
     private int totalPages;
     private String publisher;
 
-    // CAMBIO: List -> Set
     @ManyToMany
     @JoinTable(
         name = "book_author",
@@ -34,7 +33,6 @@ public class Book {
     )
     private Set<Author> authors = new HashSet<>(); // Inicializar como HashSet
 
-    // CAMBIO: List -> Set
     @ManyToMany
     @JoinTable(
         name = "book_genre",

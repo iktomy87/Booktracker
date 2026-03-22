@@ -15,4 +15,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT b FROM Book b LEFT JOIN FETCH b.authors LEFT JOIN FETCH b.genres WHERE b.id = :id")
     Optional<Book> findByIdWithRelations(@Param("id") Long id);
+
+    List<Book> findByNameContainingIgnoreCaseOrAuthorsNameContainingIgnoreCase(String name, String authorName);
 }

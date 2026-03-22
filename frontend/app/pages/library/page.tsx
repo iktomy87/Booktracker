@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { Header } from '@/components/header';
 import { LibraryStats } from '@/components/library/library-stats';
@@ -11,12 +11,53 @@ import { TimelineSection } from '@/components/library/timeline-section';
 import { cn } from '@/lib/utils';
 import { Filter, Grid, List, Plus, Download } from 'lucide-react';
 import Link from 'next/link';
+import { fetchUserLibrary, updateUserBook } from '@/lib/api';
 
 type TabType = 'reading' | 'finished' | 'wishlist' | 'timeline';
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<TabType>('reading');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [library, setLibrary] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadLibrary = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const data = await fetchUserLibrary(token);
+        setLibrary(data);
+      }
+    } catch (error) {
+      console.error("Error loading library:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLibrary();
+  }, []);
+
+  const handleUpdateProgress = async (userBookId: number) => {
+    const newPage = prompt("¿En qué página estás?");
+    if (newPage && !isNaN(parseInt(newPage))) {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          await updateUserBook(userBookId, { currentPage: parseInt(newPage) }, token);
+          loadLibrary(); // Refresh
+        }
+      } catch (error) {
+        console.error("Error updating progress:", error);
+        alert("Error al actualizar el progreso");
+      }
+    }
+  };
+
+  const readingBooks = library.filter(item => item.status === 'reading');
+  const finishedBooks = library.filter(item => item.status === 'finished');
+  const wishlistBooks = library.filter(item => item.status === 'wishlist');
 
   return (
     <div className="flex min-h-screen bg-landing-cream text-landing-text">
@@ -34,7 +75,7 @@ export default function LibraryPage() {
                 Mi Biblioteca
               </h1>
               <p className="mt-1 text-[13.5px] font-light text-landing-text-muted">
-                Tu colección personal · 34 libros en total
+                Tu colección personal · {library.length} libros en total
               </p>
             </div>
             <div className="flex gap-3">
@@ -45,7 +86,11 @@ export default function LibraryPage() {
             </div>
           </div>
 
-          <LibraryStats />
+          <LibraryStats 
+            reading={readingBooks.length} 
+            finished={finishedBooks.length} 
+            wishlist={wishlistBooks.length} 
+          />
 
           {/* Tabs */}
           <div className="mb-7 flex flex-wrap items-center gap-1.5 border-b border-landing-sand animate-fade-up">
@@ -61,7 +106,7 @@ export default function LibraryPage() {
               Leyendo <span className={cn(
                 "rounded-full px-1.5 py-0.5 text-[10.5px] font-semibold",
                 activeTab === 'reading' ? "bg-landing-dark text-landing-warm-white" : "bg-landing-sand text-landing-text-muted"
-              )}>3</span>
+              )}>{readingBooks.length}</span>
             </button>
             <button 
               onClick={() => setActiveTab('finished')}
@@ -75,7 +120,7 @@ export default function LibraryPage() {
               Terminados <span className={cn(
                 "rounded-full px-1.5 py-0.5 text-[10.5px] font-semibold",
                 activeTab === 'finished' ? "bg-landing-dark text-landing-warm-white" : "bg-landing-sand text-landing-text-muted"
-              )}>24</span>
+              )}>{finishedBooks.length}</span>
             </button>
             <button 
               onClick={() => setActiveTab('wishlist')}
@@ -89,7 +134,7 @@ export default function LibraryPage() {
               Por leer <span className={cn(
                 "rounded-full px-1.5 py-0.5 text-[10.5px] font-semibold",
                 activeTab === 'wishlist' ? "bg-landing-dark text-landing-warm-white" : "bg-landing-sand text-landing-text-muted"
-              )}>7</span>
+              )}>{wishlistBooks.length}</span>
             </button>
             <button 
               onClick={() => setActiveTab('timeline')}
@@ -104,7 +149,7 @@ export default function LibraryPage() {
             </button>
 
             <div className="flex-1" />
-
+            
             <div className="hidden items-center gap-1 lg:flex">
               <button 
                 onClick={() => setViewMode('grid')}
@@ -134,96 +179,96 @@ export default function LibraryPage() {
 
           {/* Tab Content */}
           <div className="min-h-[400px]">
-            {activeTab === 'reading' && (
-              <div className="animate-fade-up">
-                <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
-                  En progreso
-                  <div className="h-px flex-1 bg-landing-sand" />
-                </div>
-                <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                  <ReadingCard 
-                    title="Cien Años de Soledad"
-                    author="Gabriel García Márquez"
-                    currentPage={120}
-                    totalPages={471}
-                    streak="18 días seguidos"
-                    coverVariant="cv1"
-                  />
-                  <ReadingCard 
-                    title="El Señor de los Anillos"
-                    author="J.R.R. Tolkien"
-                    currentPage={347}
-                    totalPages={1216}
-                    streak="5 días seguidos"
-                    coverVariant="cv5"
-                  />
-                  <ReadingCard 
-                    title="Asesinato en el Orient Express"
-                    author="Agatha Christie"
-                    currentPage={88}
-                    totalPages={256}
-                    lastRead="Última lectura hace 12 días"
-                    isPaused={true}
-                    coverVariant="cv3"
-                  />
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'finished' && (
-              <div className="animate-fade-up">
-                <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
-                  Completados este año · 12 libros
-                  <div className="h-px flex-1 bg-landing-sand" />
-                </div>
-                <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  <FinishedCard title="The Great Gatsby" author="F. Scott Fitzgerald" date="Terminado ene. 2026" rating={5.0} coverVariant="cv2" />
-                  <FinishedCard title="Crimen y Castigo" author="Fiódor Dostoievski" date="Terminado dic. 2025" rating={4.5} coverVariant="cv4" />
-                  <FinishedCard title="Pedro Páramo" author="Juan Rulfo" date="Terminado nov. 2025" rating={4.0} coverVariant="cv6" />
-                  <FinishedCard title="Jane Eyre" author="Charlotte Brontë" date="Terminado oct. 2025" rating={5.0} coverVariant="cv8" />
-                  <FinishedCard title="Estudio en Escarlata" author="Arthur Conan Doyle" date="Terminado sep. 2025" rating={4.5} coverVariant="cv7" />
-                  <FinishedCard title="1984" author="George Orwell" date="Terminado ago. 2025" rating={5.0} coverVariant="cv9" />
-                  <FinishedCard title="Don Quijote" author="Cervantes" date="Terminado jul. 2025" rating={4.0} coverVariant="cv10" />
-                  <FinishedCard title="Los Miserables" author="Victor Hugo" date="Terminado jun. 2025" rating={4.5} coverVariant="cv1" />
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'wishlist' && (
-              <div className="animate-fade-up">
-                <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
-                  Lista de deseos · 7 títulos
-                  <div className="h-px flex-1 bg-landing-sand" />
-                </div>
-                <div className="flex flex-col gap-3">
-                  <WishlistItem rank="01" title="Ulises" author="James Joyce" tags={['Clásico', 'Modernismo', 'Irlandés']} addedDate="Añadido hace 3 días" coverVariant="cv6" />
-                  <WishlistItem rank="02" title="En Busca del Tiempo Perdido" author="Marcel Proust" tags={['Clásico', 'Francés', 'Extenso']} addedDate="Añadido hace 1 semana" coverVariant="cv8" />
-                  <WishlistItem rank="03" title="El Nombre de la Rosa" author="Umberto Eco" tags={['Histórico', 'Misterio']} addedDate="Añadido hace 2 semanas" coverVariant="cv2" />
-                  <WishlistItem rank="04" title="Ficciones" author="Jorge Luis Borges" tags={['Cuentos', 'Fantástico', 'Latinoam.']} addedDate="Añadido hace 1 mes" coverVariant="cv4" />
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'timeline' && (
-              <div className="animate-fade-up">
-                <TimelineSection />
-                <div className="mt-10">
-                  <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
-                    Todos los terminados · 2026
-                    <div className="h-px flex-1 bg-landing-sand" />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20 text-landing-text-muted">Cargando biblioteca...</div>
+            ) : (
+              <>
+                {activeTab === 'reading' && (
+                  <div className="animate-fade-up">
+                    <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
+                      En progreso
+                      <div className="h-px flex-1 bg-landing-sand" />
+                    </div>
+                    {readingBooks.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                        {readingBooks.map(item => (
+                          <ReadingCard 
+                            key={item.id}
+                            id={item.id}
+                            title={item.book.title}
+                            author={item.book.author}
+                            currentPage={item.currentPage}
+                            totalPages={item.book.pages}
+                            coverVariant={item.book.cv}
+                            onUpdateProgress={handleUpdateProgress}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-20 text-center text-landing-text-muted">No tienes libros en progreso actualmente.</div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                    <FinishedCard title="The Great Gatsby" author="F. Scott Fitzgerald" date="Ene 2026" rating={5.0} coverVariant="cv2" />
-                    <FinishedCard title="Cien Años de Soledad" author="García Márquez" date="Ene 2026" rating={5.0} coverVariant="cv1" />
-                    <FinishedCard title="Pedro Páramo" author="Juan Rulfo" date="Feb 2026" rating={4.5} coverVariant="cv6" />
-                    <FinishedCard title="Crimen y Castigo" author="Dostoievski" date="Mar 2026" rating={4.0} coverVariant="cv4" />
-                    <FinishedCard title="1984" author="George Orwell" date="Mar 2026" rating={5.0} coverVariant="cv9" />
+                )}
+
+                {activeTab === 'finished' && (
+                  <div className="animate-fade-up">
+                    <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
+                      Completados
+                      <div className="h-px flex-1 bg-landing-sand" />
+                    </div>
+                    {finishedBooks.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                        {finishedBooks.map(item => (
+                          <FinishedCard 
+                            key={item.id}
+                            title={item.book.title}
+                            author={item.book.author}
+                            date={`Terminado ${item.endDate || ''}`}
+                            rating={item.rating}
+                            coverVariant={item.book.cv} 
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-20 text-center text-landing-text-muted">Aún no has terminado ningún libro. ¡Ánimo!</div>
+                    )}
                   </div>
-                </div>
-              </div>
+                )}
+
+                {activeTab === 'wishlist' && (
+                  <div className="animate-fade-up">
+                    <div className="mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-landing-red uppercase">
+                      Lista de deseos
+                      <div className="h-px flex-1 bg-landing-sand" />
+                    </div>
+                    {wishlistBooks.length > 0 ? (
+                      <div className="flex flex-col gap-3">
+                        {wishlistBooks.map((item, index) => (
+                          <WishlistItem 
+                            key={item.id}
+                            rank={(index + 1).toString().padStart(2, '0')}
+                            title={item.book.title}
+                            author={item.book.author}
+                            tags={item.tags || []}
+                            addedDate={`Añadido ${item.startDate || ''}`}
+                            coverVariant={item.book.cv} 
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-20 text-center text-landing-text-muted">Tu lista de deseos está vacía.</div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'timeline' && (
+                  <div className="animate-fade-up">
+                    <TimelineSection />
+                  </div>
+                )}
+              </>
             )}
           </div>
-
         </div>
       </main>
     </div>

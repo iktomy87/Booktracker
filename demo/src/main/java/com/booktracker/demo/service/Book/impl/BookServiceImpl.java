@@ -62,4 +62,14 @@ public class BookServiceImpl implements BookService {
             .map(bookMapper::toDto)
             .orElseThrow(() -> new ResourceNotFoundException("El libro con ID " + id + " no existe"));
     }
+
+    @Override
+    public List<BookDto> searchBooks(String query) {
+            // Actualizamos la llamada para que coincida con el repositorio
+            List<Book> books = bookRepository.findByNameContainingIgnoreCaseOrAuthorsNameContainingIgnoreCase(query, query);
+            
+            return books.stream()
+                    .map(bookMapper::toDto)
+                    .collect(Collectors.toList());
+    }
 }

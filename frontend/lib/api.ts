@@ -1,19 +1,84 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export async function fetchBooks(token: string) {
-  const res = await fetch(`${API_URL}/api/books`, { 
+  const res = await fetch(`${API_URL}/api/books`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` // Aquí inyectamos el JWT
+      'Authorization': `Bearer ${token}`
     },
-    cache: 'no-store', 
   });
 
   if (!res.ok) {
     throw new Error('Error al obtener los libros');
   }
 
+  return res.json();
+}
+
+export async function searchBooks(query: string, token: string) {
+  const res = await fetch(`${API_URL}/api/books/search?q=${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Error al buscar libros');
+  return res.json();
+}
+
+// User Library Management
+export async function fetchUserLibrary(token: string) {
+  const res = await fetch(`${API_URL}/api/library`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Error al obtener la biblioteca');
+  return res.json();
+}
+
+export async function addUserBook(bookId: number, token: string) {
+  const res = await fetch(`${API_URL}/api/library/${bookId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Error al añadir libro a la biblioteca');
+  return res.json();
+}
+
+export async function createAndAddBook(bookData: any, token: string) {
+  // First create the book globally
+  const bookRes = await fetch(`${API_URL}/api/books`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(bookData)
+  });
+  if (!bookRes.ok) throw new Error('Error al crear el libro');
+  const newBook = await bookRes.json();
+  
+  // Then add it to user library (this might be combined in backend, but keeping it explicit)
+  return newBook;
+}
+
+export async function updateUserBook(progressId: number, updateData: { currentPage: number }, token: string) {
+  const res = await fetch(`${API_URL}/api/library/${progressId}?page=${updateData.currentPage}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Error al actualizar el libro');
   return res.json();
 }
 
@@ -39,7 +104,7 @@ export async function fetchCurrentUser(token: string) {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`, // Enviamos el JWT para autenticar la petición
+      'Authorization': `Bearer ${token}`,
     },
   });
 
@@ -49,3 +114,4 @@ export async function fetchCurrentUser(token: string) {
 
   return res.json();
 }
+
