@@ -6,8 +6,8 @@ import { searchBooks } from '@/lib/api';
 
 export interface Book {
   id: number;
-  title: string;
-  author: string;
+  name: string;
+  authors: { name: string }[];
   year: string;
   pages: number;
   genre: string;
@@ -127,13 +127,13 @@ export const SearchPanel = ({ onSelectBook, onGoToManual, selectedBook }: Search
                   selectedBook?.id === book.id ? "border-landing-red shadow-[0_0_0_3px_rgba(140,32,48,0.1)]" : "border-landing-sand bg-landing-warm-white"
                 )}
               >
-                <BookCover title={book.title} variant={book.cv} size="md" />
+                <BookCover title={book.name} variant={book.cv} size="md" />
                 <div className="flex flex-1 flex-col min-w-0 pr-5">
                   <h3 className="mb-0.5 font-playfair text-[14.5px] font-medium leading-tight text-landing-dark truncate">
-                    {book.title}
+                    {book.name}
                   </h3>
                   <p className="mb-1.5 text-[12px] text-landing-red truncate">
-                    {book.author}
+                    {book.authors && book.authors.length > 0 ? book.authors.map(a => a.name).join(', ') : 'Autor desconocido'}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-landing-sand px-2 py-0.5 text-[10px] text-landing-text-muted">{book.year}</span>

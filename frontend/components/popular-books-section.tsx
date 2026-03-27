@@ -7,7 +7,7 @@ import { BookCard } from "@/components/book-card"
 interface Book {
   id: number;
   name: string; 
-  authorName: string; 
+  authors: { name: string }[]; 
   coverUrl?: string; 
 }
 
@@ -64,8 +64,7 @@ export function PopularBooksSection({ books }: PopularBooksSectionProps) {
           <BookCard
             key={book.id}
             title={book.name} 
-            author={book.authorName || "Desconocido"} 
-            // CAMBIO: Enviamos undefined si no hay imagen, permitiendo que actúe BookCover
+            author={book.authors && book.authors.length > 0 ? book.authors.map(a => a.name).join(', ') : 'Autor desconocido'}
             coverUrl={book.coverUrl || undefined} 
             rating={4.5} 
           />

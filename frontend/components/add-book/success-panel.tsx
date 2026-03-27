@@ -21,7 +21,7 @@ export const SuccessPanel = ({ selectedBook, status, onAddAnother }: SuccessPane
 
   return (
     <div className="py-14 text-center animate-fade-up">
-      <BookCover title={selectedBook.title} variant={selectedBook.cv} size="xl" className="mx-auto mb-8" />
+      <BookCover title={selectedBook.name} variant={selectedBook.cv} size="xl" className="mx-auto mb-8" />
       
       <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#c5d9b0] bg-[#edf3e8] px-4 py-1.5 text-[12.5px] font-medium text-[#3d6e32]">
         <Check className="size-3.5" /> Añadido a tu biblioteca
@@ -32,7 +32,7 @@ export const SuccessPanel = ({ selectedBook, status, onAddAnother }: SuccessPane
       </h2>
       
       <p className="mx-auto mb-9 max-w-[340px] text-[14px] font-light leading-relaxed text-landing-text-muted">
-        <strong>{selectedBook.title}</strong> fue añadido a tu biblioteca. 
+        <strong>{selectedBook.name}</strong> fue añadido a tu biblioteca. 
         {statusMsgs[status]}
       </p>
       

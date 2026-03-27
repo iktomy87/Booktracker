@@ -56,11 +56,11 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
       {/* ... (Selected book preview remains same) */}
       <div className="relative mb-7 flex items-start gap-6 overflow-hidden rounded-[20px] bg-landing-dark p-8 text-landing-warm-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(140,32,48,0.3)_0%,transparent_60%)] pointer-events-none" />
-        <BookCover title={selectedBook.title} variant={selectedBook.cv} size="lg" className="relative z-10" />
+        <BookCover title={selectedBook.name} variant={selectedBook.cv} size="lg" className="relative z-10" />
         <div className="relative z-10 flex-1">
           <div className="mb-1 text-[10px] tracking-widest text-white/45 uppercase">Libro seleccionado</div>
-          <h2 className="mb-0.5 font-playfair text-[23px] font-medium leading-tight">{selectedBook.title}</h2>
-          <p className="mb-3.5 text-[13.5px] text-[#e8a0a8]">{selectedBook.author}</p>
+          <h2 className="mb-0.5 font-playfair text-[23px] font-medium leading-tight">{selectedBook.name}</h2>
+          <p className="mb-3.5 text-[13.5px] text-[#e8a0a8]">{selectedBook.authors && selectedBook.authors.length > 0 ? selectedBook.authors.map(a => a.name).join(', ') : 'Autor desconocido'}</p>
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10.5px] text-white/70">{selectedBook.year}</span>
             <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10.5px] text-white/70">{selectedBook.pages > 0 ? `${selectedBook.pages} pág.` : "Manual"}</span>

@@ -20,8 +20,8 @@ export const CreateManualPanel = ({ onManualSubmit, onBack }: CreateManualPanelP
     if (!manualBook.title) return;
     const book: Book = {
       id: Date.now(),
-      title: manualBook.title,
-      author: manualBook.author || 'Autor desconocido',
+      name: manualBook.title,
+      authors: manualBook.author || 'Autor desconocido',
       year: '2024',
       pages: 0,
       genre: 'Manual',

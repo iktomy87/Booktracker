@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link"
 import Typewriter from 'typewriter-effect';
+import { Medal, Flame } from "lucide-react"
 
 export function LandingHero() {
   const [isTypingDone, setIsTypingDone] = useState(false);
@@ -93,14 +94,17 @@ export function LandingHero() {
               <div className="text-[10px] text-landing-text-muted mt-1 uppercase tracking-wider">Este año</div>
             </div>
             <div className="bg-landing-cream rounded-xl p-4 text-center border border-landing-sand">
-              <div className="font-playfair text-2xl font-semibold text-landing-dark leading-none">🔥 18</div>
+              <div className="flex items-center justify-center font-playfair text-2xl font-semibold text-landing-dark leading-none">
+                <Flame className="size-6" /> 
+                <p>18</p>
+              </div>
               <div className="text-[10px] text-landing-text-muted mt-1 uppercase tracking-wider">Racha diaria</div>
             </div>
           </div>
         </div>
 
         <div className="absolute -bottom-6 -left-8 bg-landing-dark text-landing-warm-white rounded-xl p-3.5 px-5 flex items-center gap-3 shadow-[0_8px_30px_rgba(42,31,20,0.25)] animate-float">
-          <div className="text-xl">🏅</div>
+          <div className="text-xl"><Medal></Medal></div>
           <div className="text-[11px]">
             <strong className="block text-[13px] font-playfair font-semibold">Nueva medalla desbloqueada</strong>
             Lee 10 libros este año

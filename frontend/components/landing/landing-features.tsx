@@ -1,19 +1,21 @@
+import { BookOpen, NotebookPen, Search } from "lucide-react"
+
 export function LandingFeatures() {
   const features = [
     {
-      icon: "📖",
+      icon: <BookOpen></BookOpen>,
       title: "Registra cada página",
       desc: "Mide tus avances como prefieras. Con la línea de tiempo automática de Quill, retoma exactamente donde lo dejaste, siempre.",
       highlight: false
     },
     {
-      icon: "✦",
+      icon: <NotebookPen className="text-white"></NotebookPen>,
       title: "Construye nuevos hábitos",
       desc: "Rachas diarias, metas anuales, y recordatorios que te ayuden a leer un poco más cada día. Pequeños hábitos, grandes resultados.",
       highlight: true
     },
     {
-      icon: "🔍",
+      icon: <Search></Search>,
       title: "Descubre nuevas historias",
       desc: "Recomendaciones personalizadas basadas en tus gustos. Busca por géneros, sentimientos, o lo que tus amigos se encuentran leyendo",
       highlight: false
