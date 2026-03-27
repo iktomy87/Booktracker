@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, X, CheckCircle2 } from 'lucide-react';
+import { Star, X, CheckCircle2, BookOpen, SquareCheckBig, LibraryBig, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookCover } from './book-cover';
 import { Book } from './search-panel';
@@ -80,9 +80,9 @@ export const StatusPanel = ({ selectedBook, onFinish, onBack }: StatusPanelProps
         <div className="text-[11.5px] font-semibold tracking-widest text-landing-text-muted uppercase">¿En qué estado está este libro para ti?</div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[
-            { id: 'reading', icon: '📖', name: 'Leyendo ahora', desc: 'Lo estoy leyendo' },
-            { id: 'finished', icon: '✅', name: 'Ya lo leí', desc: 'Lo terminé en el pasado' },
-            { id: 'wishlist', icon: '📚', name: 'Quiero leerlo', desc: 'Añadir a mi lista' }
+            { id: 'reading', icon: <BookOpen className='size-7'></BookOpen>, name: 'Leyendo ahora', desc: 'Lo estoy leyendo' },
+            { id: 'finished', icon: <SquareCheckBig className='size-7'></SquareCheckBig>, name: 'Ya lo leí', desc: 'Lo terminé en el pasado' },
+            { id: 'wishlist', icon: <LibraryBig className='size-7'></LibraryBig>, name: 'Quiero leerlo', desc: 'Añadir a mi lista' }
           ].map(s => (
             <button 
               key={s.id}
