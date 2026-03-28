@@ -41,15 +41,23 @@ export async function fetchUserLibrary(token: string) {
   return res.json();
 }
 
-export async function addUserBook(bookId: number, token: string) {
-  const res = await fetch(`${API_URL}/api/library/${bookId}`, {
+export async function addUserBook(payload: any, token: string) {
+  const res = await fetch(`${API_URL}/api/library/${payload.bookId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
-    }
+    },
+    body: JSON.stringify(payload)
   });
-  if (!res.ok) throw new Error('Error al añadir libro a la biblioteca');
+
+  if (!res.ok) {
+    // CAPTURAMOS EL ERROR EXACTO DEL BACKEND
+    const errorDetails = await res.text();
+    console.error("🚨 Error del backend al añadir libro:", res.status, errorDetails);
+    throw new Error('Error al añadir libro a la biblioteca');
+  }
+  
   return res.json();
 }
 

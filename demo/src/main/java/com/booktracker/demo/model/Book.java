@@ -1,5 +1,6 @@
 package com.booktracker.demo.model;
 
+import java.time.LocalDate;
 import java.util.HashSet; 
 import java.util.Set;    
 
@@ -21,9 +22,14 @@ public class Book {
     private String name;
     
     @Column(length = 500)
-    private String description; 
+    private String description;
+    
+    @Column(name = "publication_date")
+    private LocalDate date;
+
     private int totalPages;
     private String publisher;
+    private Double rating;
 
     @ManyToMany
     @JoinTable(
