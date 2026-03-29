@@ -55,7 +55,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // Permite que tu WebConfig maneje las reglas CORS de React
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll() // Las rutas de login/registro son PÚBLICAS
+                .requestMatchers("/auth/**", "/api/books").permitAll() // Las rutas de login/registro son PÚBLICAS
                 .anyRequest().authenticated() // Cualquier otra ruta EXIGE un token válido
             )
             // APIs REST no manejan estado local, usan Tokens

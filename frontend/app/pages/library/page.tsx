@@ -9,9 +9,9 @@ import { FinishedCard } from '@/components/library/finished-card';
 import { WishlistItem } from '@/components/library/wishlist-item';
 import { TimelineSection } from '@/components/library/timeline-section';
 import { cn } from '@/lib/utils';
-import { Filter, Grid, List, Plus, Download } from 'lucide-react';
+import { Filter, Grid, List, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { fetchUserLibrary, updateUserBook } from '@/lib/api';
+import { getUserLibrary, updateUserBook } from '@/lib/api';
 
 type TabType = 'reading' | 'finished' | 'wishlist' | 'timeline';
 
@@ -21,15 +21,23 @@ export default function LibraryPage() {
   const [library, setLibrary] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadLibrary = async () => {
+const loadLibrary = async () => {
+    console.log("1. 🚀 Iniciando carga de biblioteca...");
+    if (typeof window === 'undefined') return;
+
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
+      console.log("2. 🔑 Token encontrado:", token ? "SÍ, procediendo..." : "NO, está vacío");
+
       if (token) {
-        const data = await fetchUserLibrary(token);
+        console.log("3. 📡 Enviando petición a Spring Boot...");
+        const data = await getUserLibrary(token);
+        console.log("4. 📚 ÉXITO - Datos recibidos:", data);
         setLibrary(data);
       }
     } catch (error) {
-      console.error("Error loading library:", error);
+      console.error("5. ❌ ERROR en la comunicación:", error);
     } finally {
       setIsLoading(false);
     }
@@ -43,10 +51,12 @@ export default function LibraryPage() {
     const newPage = prompt("¿En qué página estás?");
     if (newPage && !isNaN(parseInt(newPage))) {
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          await updateUserBook(userBookId, { currentPage: parseInt(newPage) }, token);
-          loadLibrary(); // Refresh
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('token');
+          if (token) {
+            await updateUserBook(userBookId, { currentPage: parseInt(newPage) }, token);
+            loadLibrary(); // Refrescar los datos
+          }
         }
       } catch (error) {
         console.error("Error updating progress:", error);
@@ -191,15 +201,16 @@ export default function LibraryPage() {
                     </div>
                     {readingBooks.length > 0 ? (
                       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                        {/* Se ajustó la lectura de propiedades a item.title, item.userBookId, etc. */}
                         {readingBooks.map(item => (
                           <ReadingCard 
-                            key={item.id}
-                            id={item.id}
-                            title={item.book.title}
-                            author={item.book.author}
+                            key={item.userBookId}
+                            id={item.userBookId}
+                            title={item.title}
+                            author={item.author}
                             currentPage={item.currentPage}
-                            totalPages={item.book.pages}
-                            coverVariant={item.book.cv}
+                            totalPages={item.totalPages}
+                            coverVariant={item.coverVariant}
                             onUpdateProgress={handleUpdateProgress}
                           />
                         ))}
@@ -220,12 +231,12 @@ export default function LibraryPage() {
                       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {finishedBooks.map(item => (
                           <FinishedCard 
-                            key={item.id}
-                            title={item.book.title}
-                            author={item.book.author}
+                            key={item.userBookId}
+                            title={item.title}
+                            author={item.author}
                             date={`Terminado ${item.endDate || ''}`}
                             rating={item.rating}
-                            coverVariant={item.book.cv} 
+                            coverVariant={item.coverVariant} 
                           />
                         ))}
                       </div>
@@ -245,13 +256,13 @@ export default function LibraryPage() {
                       <div className="flex flex-col gap-3">
                         {wishlistBooks.map((item, index) => (
                           <WishlistItem 
-                            key={item.id}
+                            key={item.userBookId}
                             rank={(index + 1).toString().padStart(2, '0')}
-                            title={item.book.title}
-                            author={item.book.author}
+                            title={item.title}
+                            author={item.author}
                             tags={item.tags || []}
                             addedDate={`Añadido ${item.startDate || ''}`}
-                            coverVariant={item.book.cv} 
+                            coverVariant={item.coverVariant} 
                           />
                         ))}
                       </div>

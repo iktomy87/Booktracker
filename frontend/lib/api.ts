@@ -29,7 +29,7 @@ export async function searchBooks(query: string, token: string) {
 }
 
 // User Library Management
-export async function fetchUserLibrary(token: string) {
+export async function getUserLibrary(token: string): Promise<any[]> {
   const res = await fetch(`${API_URL}/api/library`, {
     method: 'GET',
     headers: {
@@ -37,7 +37,11 @@ export async function fetchUserLibrary(token: string) {
       'Authorization': `Bearer ${token}`
     }
   });
-  if (!res.ok) throw new Error('Error al obtener la biblioteca');
+
+  if (!res.ok) {
+    throw new Error('Error al obtener la biblioteca');
+  }
+
   return res.json();
 }
 
@@ -52,7 +56,6 @@ export async function addUserBook(payload: any, token: string) {
   });
 
   if (!res.ok) {
-    // CAPTURAMOS EL ERROR EXACTO DEL BACKEND
     const errorDetails = await res.text();
     console.error("🚨 Error del backend al añadir libro:", res.status, errorDetails);
     throw new Error('Error al añadir libro a la biblioteca');

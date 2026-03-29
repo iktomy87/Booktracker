@@ -1,15 +1,20 @@
 package com.booktracker.demo.service.LibraryItem.impl;
 
-import com.booktracker.demo.dto.LibraryItem.LibraryItemDto;
-import com.booktracker.demo.model.Book;
-import com.booktracker.demo.model.User;
-import com.booktracker.demo.model.LibraryItem;
-import com.booktracker.demo.repository.Book.BookRepository;
-import com.booktracker.demo.repository.User.UserRepository;
-import com.booktracker.demo.repository.LibraryItem.LibraryItemRepository;
-import com.booktracker.demo.service.LibraryItem.LibraryItemService;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.booktracker.demo.dto.LibraryItem.LibraryItemDto;
+import com.booktracker.demo.dto.LibraryItem.LibraryItemResponseDto;
+import com.booktracker.demo.model.Book;
+import com.booktracker.demo.model.LibraryItem;
+import com.booktracker.demo.model.User;
+import com.booktracker.demo.repository.Book.BookRepository;
+import com.booktracker.demo.repository.LibraryItem.LibraryItemRepository;
+import com.booktracker.demo.repository.User.UserRepository;
+import com.booktracker.demo.service.LibraryItem.LibraryItemService;
 
 @Service
 public class LibraryItemServiceImpl implements LibraryItemService {
@@ -28,8 +33,8 @@ public class LibraryItemServiceImpl implements LibraryItemService {
 
     @Override
     @Transactional
-    public LibraryItemDto addBookToLibrary(String username, Long bookId, LibraryItemDto payload) {
-        User user = userRepository.findByEmail(username)
+    public LibraryItemDto addBookToLibrary(String email, Long bookId, LibraryItemDto payload) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Book book = bookRepository.findById(bookId)
@@ -61,5 +66,40 @@ public class LibraryItemServiceImpl implements LibraryItemService {
         result.setNotes(saved.getNotes());
 
         return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LibraryItemResponseDto> getUserLibrary(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<LibraryItem> userBooks = libraryItemRepository.findAllByUser(user);
+
+        return userBooks.stream().map(ub -> {
+            LibraryItemResponseDto dto = new LibraryItemResponseDto();
+            dto.setUserBookId(ub.getId());
+            dto.setBookId(ub.getBook().getId());
+            dto.setTitle(ub.getBook().getName());
+
+            String authorName = "Desconocido";
+            if (ub.getBook().getAuthors() != null && !ub.getBook().getAuthors().isEmpty()) {
+                authorName = ub.getBook().getAuthors().iterator().next().getName();
+            }
+            dto.setAuthor(authorName);
+
+            dto.setCoverUrl(null);
+            dto.setCoverVariant(null);
+
+            dto.setTotalPages(ub.getBook().getTotalPages());
+
+            dto.setStatus(ub.getStatus());
+            dto.setCurrentPage(ub.getCurrentPage());
+            dto.setStartDate(ub.getStartDate());
+            dto.setEndDate(ub.getEndDate());
+            dto.setRating(ub.getRating());
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
